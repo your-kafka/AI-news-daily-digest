@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://www.anthropic.com/news/fresh-post</loc><lastmod>2026-11-09T00:00:00Z</lastmod></url>
+  <url><loc>https://www.anthropic.com/research/old-paper</loc><lastmod>2025-01-01T00:00:00Z</lastmod></url>
+  <url><loc>https://www.anthropic.com/engineering/no-lastmod</loc></url>
+  <url><loc>https://www.anthropic.com/careers</loc><lastmod>2026-11-09T00:00:00Z</lastmod></url>
+  <url><loc>https://www.anthropic.com/news/a/b</loc></url>
+</urlset>

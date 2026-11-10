@@ -37,6 +37,17 @@ uv run python src/ai_news/rag/pipeline.py
 
 If one source fails, the others are still saved, and every run is logged in the `ingest_runs` table. `docker compose down` stops the database and keeps the data; `docker compose down -v` deletes it.
 
+### Tests
+
+```bash
+uv run pytest                          # everything; integration tests need `docker compose up -d`
+uv run pytest -m "not integration"     # unit tests only: no database, no network
+uv run pytest --cov                    # with coverage
+uv run ruff check src tests migrations && uv run ruff format --check src tests migrations
+```
+
+Integration tests create a separate `lodestar_test` database on the same server, run the migrations into it, and drop it at the end. Your `lodestar` data is never touched. If PostgreSQL isn't running, they're skipped. Scraper tests use saved pages in `tests/fixtures/`, so no test hits a live site, Groq or Hugging Face.
+
 Each scraper file also runs on its own and only prints what its source published in the last 24 hours, without touching the database. In VS Code, select the `.venv` interpreter and use **Run Python File**.
 
 | File | Source |
@@ -392,7 +403,7 @@ App services declare `depends_on` with `condition: service_healthy`, or `service
 
 | Workflow | Runs on | What it does |
 |---|---|---|
-| `ci.yml` | PRs, pushes | `ruff` lint and format check, `mypy`, and `pytest` with a coverage gate |
+| `ci.yml` (**built**) | PRs, pushes | `ruff` lint and format check, and `pytest` with an 87% coverage gate against a ParadeDB service container. `mypy` comes later |
 | `security.yml` | PRs, pushes, weekly | `pip-audit` (dependencies), `bandit` (SAST), `gitleaks` (secrets), Trivy config scan (Dockerfile, Compose) |
 | `eval-gate.yml` | PRs touching retrieval or eval | Loads the snapshot into a Postgres service container and runs stages 1–5 on the 40 queries. **Fails if nDCG@10 drops more than 2%** against `eval/baseline.json`, and posts the table to the job summary |
 | `docker-publish.yml` | `main`, tags | Multi-arch buildx with the GitHub Actions cache, push to GHCR, Trivy image scan, SBOM (Syft, SPDX), cosign keyless signature and SBOM attestation |
@@ -413,7 +424,7 @@ The targets come from the project brief. The **Measured** column is filled in fr
 | LLM tokens per digest run | ~180K → ~7K | tokenizer count (naive) against response `usage`, median of 14 daily runs | — |
 | `/search` latency | p95 under 400 ms | k6 replaying the 40 eval queries at a fixed rate, on documented hardware | — |
 | App image size | 6.2 GB → 1.3 GB | `docker image ls`, naive build against optimized build | — |
-| Test coverage | 87% or more | `pytest --cov` in `ci.yml` | — |
+| Test coverage | 87% or more | `pytest --cov` in `ci.yml` | 91% (188 tests, 2026-11-11) |
 | Regression gate | Blocks a drop in nDCG@10 of more than 2% | `eval-gate.yml` | — |
 
 ## Project layout
@@ -456,19 +467,24 @@ ai-news/
 │   │   └── pipeline.py         # runs the stages; interactive entry point
 │   └── evaluation/             # pooling.py (snapshot + pools), labeling.py (LLM pre-labels), evaluate.py + metrics.py (nDCG@10)
 ├── eval/                       # queries, snapshot manifest, pools, judgments (see eval/README.md)
+├── tests/
+│   ├── unit/                   # no network, no database: ranking, metrics, scrapers on fixtures, chunking, labeling
+│   ├── integration/            # real PostgreSQL: migrations, upserts, BM25 + HNSW retrievers, stages 1–5
+│   └── fixtures/               # saved HTML, RSS and sitemap pages
+├── .github/workflows/ci.yml    # lint + tests with a coverage gate
 ├── migrations/                 # Alembic env.py, template and versions/
 ├── compose.yaml                # PostgreSQL 18 (ParadeDB image)
 ├── .env.example
 └── pyproject.toml              # dependencies + Alembic and ruff config
 ```
 
-Still to come: `cli.py`, `indexing/`, `retrieval/`, `api/`, `worker/`, `config/profiles.yaml`, `eval/`, `tests/`, `docker/Dockerfile`, `docs/benchmarks.md` and `.github/workflows/`.
+Still to come: `cli.py`, `api/`, `worker/`, `config/profiles.yaml`, `docker/Dockerfile`, `docs/benchmarks.md` and the other five workflows.
 
 ## Roadmap
 
 ### Phase 0: Foundations
 - [ ] Runtime dependencies: `httpx`, `feedparser`, `trafilatura`, `lxml`, `youtube-transcript-api`, `pydantic`, `pydantic-settings`, `typer`, `tenacity`, `structlog`, `pyyaml`
-- [ ] Dev dependencies: `pytest`, `pytest-asyncio`, `pytest-cov`, `respx`, `ruff`, `mypy`, `pre-commit`
+- [x] Dev dependencies: `pytest`, `pytest-cov`, `ruff` (`pytest-asyncio`, `respx`, `mypy`, `pre-commit` still to add)
 - [ ] `config.py` and `.env.example`, structured logging, the Typer CLI skeleton, tool config in `pyproject.toml`, and `data/` and `.env` added to `.gitignore`
 - **Done when** `uv run ai-news --help` and `uv run pytest` both pass.
 
@@ -527,7 +543,8 @@ Still to come: `cli.py`, `indexing/`, `retrieval/`, `api/`, `worker/`, `config/p
 - **Done when** `docker compose up --wait` goes green on amd64 and arm64, and both image sizes are in `docs/benchmarks.md`.
 
 ### Phase 8: CI/CD
-- [ ] The six workflows, with the coverage gate raised to 87%
+- [x] `ci.yml`: lint, format check, unit + integration tests, 87% coverage gate
+- [ ] The other five workflows
 - [ ] Pick a deploy target, for example one small VM running Compose and pulling images from GHCR by digest
 - [ ] Prove rollback works by deploying a deliberately broken image
 - **Done when** every workflow is green on `main` and the broken deploy rolled itself back.

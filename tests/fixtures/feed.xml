@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Example news</title>
+    <item>
+      <title>New model released</title>
+      <link>https://example.com/index/new-model/</link>
+      <description>A new model is out.</description>
+      <category>Product</category>
+      <category>Research</category>
+      <pubDate>Mon, 09 Nov 2026 12:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Old post</title>
+      <link>https://example.com/index/old-post/</link>
+      <description>From last year.</description>
+      <pubDate>Mon, 03 Nov 2025 12:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Undated post</title>
+      <link>https://example.com/index/undated/</link>
+    </item>
+  </channel>
+</rss>
