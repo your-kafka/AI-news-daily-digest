@@ -1,0 +1,40 @@
+{"id":"q01","query":"Gemini 4 Carbon","type":"exact"}
+{"id":"q02","query":"Fable 5.2","type":"exact"}
+{"id":"q03","query":"GPT-6.1 Terra","type":"exact"}
+{"id":"q04","query":"Genie 4 world simulation","type":"exact"}
+{"id":"q05","query":"Le Chonk Mistral Large 4","type":"exact"}
+{"id":"q06","query":"torch.compile Dynamo","type":"exact"}
+{"id":"q07","query":"AlphaProof Code","type":"exact"}
+{"id":"q08","query":"Anthropic S-1 filing for an IPO","type":"exact"}
+{"id":"q09","query":"Matrix-Game 4.0","type":"exact"}
+{"id":"q10","query":"LFM2.5-24B-A2B on-device agents","type":"exact"}
+{"id":"q11","query":"Open ASR Leaderboard","type":"exact"}
+{"id":"q12","query":"how small models learn by imitating a bigger teacher model","type":"paraphrase"}
+{"id":"q13","query":"language models that keep reasoning even after being told to stop","type":"paraphrase"}
+{"id":"q14","query":"using AI to find security holes in software before attackers do","type":"paraphrase"}
+{"id":"q15","query":"AI helping scientists discover new medicines faster","type":"paraphrase"}
+{"id":"q16","query":"robots learning fine-grained hand manipulation","type":"paraphrase"}
+{"id":"q17","query":"giving AI agents long-term memory across sessions","type":"paraphrase"}
+{"id":"q18","query":"making video generation fast enough for real-time streaming","type":"paraphrase"}
+{"id":"q19","query":"training agents that operate a computer's graphical interface","type":"paraphrase"}
+{"id":"q20","query":"running models on Amazon's custom AI chips","type":"paraphrase"}
+{"id":"q21","query":"AI systems copying themselves outside their own servers","type":"paraphrase"}
+{"id":"q22","query":"using language models to mathematically prove that programs are correct","type":"paraphrase"}
+{"id":"q23","query":"speech synthesis that runs on a phone","type":"paraphrase"}
+{"id":"q24","query":"keeping teenagers safe when they use chatbots","type":"paraphrase"}
+{"id":"q25","query":"Anthropic announcements in early November 2026","type":"time"}
+{"id":"q26","query":"new frontier models released in October 2026","type":"time"}
+{"id":"q27","query":"OpenAI security announcements in November 2026","type":"time"}
+{"id":"q28","query":"AI news from November 10, 2026","type":"time"}
+{"id":"q29","query":"open-weight model releases on Hugging Face in October 2026","type":"time"}
+{"id":"q30","query":"Google DeepMind robotics updates in November 2026","type":"time"}
+{"id":"q31","query":"reactions to the Gemini 4 Carbon launch","type":"cross_source"}
+{"id":"q32","query":"Anthropic going public","type":"cross_source"}
+{"id":"q33","query":"AI agents finding vulnerabilities in Linux and other critical software","type":"cross_source"}
+{"id":"q34","query":"AI labs supporting scientific research and discovery","type":"cross_source"}
+{"id":"q35","query":"governments partnering with AI labs","type":"cross_source"}
+{"id":"q36","query":"the US and China competing over AI chips","type":"cross_source"}
+{"id":"q37","query":"model distillation attacks and how labs defend against them","type":"cross_source"}
+{"id":"q38","query":"agent harnesses and scaffolding for LLM agents","type":"cross_source"}
+{"id":"q39","query":"how AI is changing jobs and the way people work","type":"cross_source"}
+{"id":"q40","query":"world models for games and simulation","type":"cross_source"}

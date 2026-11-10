@@ -1,0 +1,1552 @@
+{
+  "created_at": "2026-11-10T21:05:58+00:00",
+  "grades": "llm",
+  "settings": {
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "chunk_size_tokens": 400,
+    "chunk_overlap_tokens": 60,
+    "model_cache_dir": "/Users/lucky/.cache/fastembed",
+    "rerank_model": "Xenova/ms-marco-MiniLM-L-6-v2",
+    "retrieval_query_count": 5,
+    "retrieval_candidates": 100,
+    "rrf_k": 60,
+    "pooling_method": "max",
+    "pool_size": 30,
+    "rerank_keep": 20,
+    "mmr_lambda": 0.7,
+    "retrieval_top_k": 10,
+    "curation_candidates": 15
+  },
+  "summary": {
+    "bm25": {
+      "ndcg@10": 0.6267,
+      "recall@10": 0.6643,
+      "mrr@10": 0.694,
+      "judged@10": 0.835
+    },
+    "dense": {
+      "ndcg@10": 0.7523,
+      "recall@10": 0.7923,
+      "mrr@10": 0.8148,
+      "judged@10": 0.82
+    },
+    "hybrid": {
+      "ndcg@10": 0.7152,
+      "recall@10": 0.7422,
+      "mrr@10": 0.8146,
+      "judged@10": 0.8425
+    },
+    "hybrid_rerank": {
+      "ndcg@10": 0.8264,
+      "recall@10": 0.8433,
+      "mrr@10": 0.9174,
+      "judged@10": 0.865
+    },
+    "full": {
+      "ndcg@10": 0.8054,
+      "recall@10": 0.8195,
+      "mrr@10": 0.9174,
+      "judged@10": 0.805
+    }
+  },
+  "significance_vs_dense": {
+    "bm25": {
+      "delta": -0.1256,
+      "p_value": 0.0434
+    },
+    "hybrid": {
+      "delta": -0.0372,
+      "p_value": 0.4192
+    },
+    "hybrid_rerank": {
+      "delta": 0.0741,
+      "p_value": 0.0264
+    },
+    "full": {
+      "delta": 0.0531,
+      "p_value": 0.1276
+    }
+  },
+  "per_query": [
+    {
+      "id": "q01",
+      "type": "exact",
+      "query": "Gemini 4 Carbon",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "dense": {
+          "ndcg@10": 0.9861,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "hybrid": {
+          "ndcg@10": 0.9861,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.9245,
+          "recall@10": 0.8,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "full": {
+          "ndcg@10": 0.8133,
+          "recall@10": 0.8,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        }
+      }
+    },
+    {
+      "id": "q02",
+      "type": "exact",
+      "query": "Fable 5.2",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.9507,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "dense": {
+          "ndcg@10": 0.9839,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "hybrid": {
+          "ndcg@10": 0.9994,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.9806,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "full": {
+          "ndcg@10": 0.861,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        }
+      }
+    },
+    {
+      "id": "q03",
+      "type": "exact",
+      "query": "GPT-6.1 Terra",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.0,
+          "recall@10": 0.0,
+          "mrr@10": 0.0,
+          "judged@10": 0.9
+        },
+        "dense": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "hybrid": {
+          "ndcg@10": 0.0,
+          "recall@10": 0.0,
+          "mrr@10": 0.0,
+          "judged@10": 0.9
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "full": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        }
+      }
+    },
+    {
+      "id": "q04",
+      "type": "exact",
+      "query": "Genie 4 world simulation",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        },
+        "dense": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "hybrid": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "full": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        }
+      }
+    },
+    {
+      "id": "q05",
+      "type": "exact",
+      "query": "Le Chonk Mistral Large 4",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "dense": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "hybrid": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "full": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.6
+        }
+      }
+    },
+    {
+      "id": "q06",
+      "type": "exact",
+      "query": "torch.compile Dynamo",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.9538,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "dense": {
+          "ndcg@10": 0.9128,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "hybrid": {
+          "ndcg@10": 0.9275,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.9533,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "full": {
+          "ndcg@10": 0.9118,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        }
+      }
+    },
+    {
+      "id": "q07",
+      "type": "exact",
+      "query": "AlphaProof Code",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "dense": {
+          "ndcg@10": 0.9468,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        },
+        "hybrid": {
+          "ndcg@10": 0.9468,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.9468,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        },
+        "full": {
+          "ndcg@10": 0.9468,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.5
+        }
+      }
+    },
+    {
+      "id": "q08",
+      "type": "exact",
+      "query": "Anthropic S-1 filing for an IPO",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.5767,
+          "recall@10": 0.5,
+          "mrr@10": 0.5,
+          "judged@10": 1.0
+        },
+        "dense": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "hybrid": {
+          "ndcg@10": 0.9086,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "full": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        }
+      }
+    },
+    {
+      "id": "q09",
+      "type": "exact",
+      "query": "Matrix-Game 4.0",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "dense": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.6
+        },
+        "hybrid": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.6
+        },
+        "full": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.5
+        }
+      }
+    },
+    {
+      "id": "q10",
+      "type": "exact",
+      "query": "LFM2.5-24B-A2B on-device agents",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "dense": {
+          "ndcg@10": 0.9828,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "hybrid": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "full": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        }
+      }
+    },
+    {
+      "id": "q11",
+      "type": "exact",
+      "query": "Open ASR Leaderboard",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "dense": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        },
+        "hybrid": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "full": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        }
+      }
+    },
+    {
+      "id": "q12",
+      "type": "paraphrase",
+      "query": "how small models learn by imitating a bigger teacher model",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.7505,
+          "recall@10": 0.5714,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "dense": {
+          "ndcg@10": 0.8751,
+          "recall@10": 0.8571,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "hybrid": {
+          "ndcg@10": 0.8604,
+          "recall@10": 0.7143,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.7899,
+          "recall@10": 0.5714,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "full": {
+          "ndcg@10": 0.7918,
+          "recall@10": 0.5714,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        }
+      }
+    },
+    {
+      "id": "q13",
+      "type": "paraphrase",
+      "query": "language models that keep reasoning even after being told to stop",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.0,
+          "recall@10": 0.0,
+          "mrr@10": 0.0,
+          "judged@10": 0.5
+        },
+        "dense": {
+          "ndcg@10": 0.4578,
+          "recall@10": 1.0,
+          "mrr@10": 0.1667,
+          "judged@10": 0.7
+        },
+        "hybrid": {
+          "ndcg@10": 0.9173,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.6
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        },
+        "full": {
+          "ndcg@10": 0.9828,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        }
+      }
+    },
+    {
+      "id": "q14",
+      "type": "paraphrase",
+      "query": "using AI to find security holes in software before attackers do",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.7245,
+          "recall@10": 0.8,
+          "mrr@10": 0.5,
+          "judged@10": 0.9
+        },
+        "dense": {
+          "ndcg@10": 0.8082,
+          "recall@10": 0.8,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "hybrid": {
+          "ndcg@10": 0.8575,
+          "recall@10": 0.8,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.6243,
+          "recall@10": 0.8,
+          "mrr@10": 0.5,
+          "judged@10": 0.9
+        },
+        "full": {
+          "ndcg@10": 0.5556,
+          "recall@10": 0.6,
+          "mrr@10": 0.5,
+          "judged@10": 0.8
+        }
+      }
+    },
+    {
+      "id": "q15",
+      "type": "paraphrase",
+      "query": "AI helping scientists discover new medicines faster",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.3234,
+          "recall@10": 0.4286,
+          "mrr@10": 0.25,
+          "judged@10": 0.8
+        },
+        "dense": {
+          "ndcg@10": 0.5378,
+          "recall@10": 0.5714,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        },
+        "hybrid": {
+          "ndcg@10": 0.5702,
+          "recall@10": 0.5714,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.7794,
+          "recall@10": 0.7143,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "full": {
+          "ndcg@10": 0.7945,
+          "recall@10": 0.7143,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        }
+      }
+    },
+    {
+      "id": "q16",
+      "type": "paraphrase",
+      "query": "robots learning fine-grained hand manipulation",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.4248,
+          "recall@10": 0.3,
+          "mrr@10": 0.2,
+          "judged@10": 0.7
+        },
+        "dense": {
+          "ndcg@10": 0.8643,
+          "recall@10": 0.8,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "hybrid": {
+          "ndcg@10": 0.6474,
+          "recall@10": 0.5,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.5167,
+          "recall@10": 0.4,
+          "mrr@10": 0.5,
+          "judged@10": 0.7
+        },
+        "full": {
+          "ndcg@10": 0.5167,
+          "recall@10": 0.4,
+          "mrr@10": 0.5,
+          "judged@10": 0.7
+        }
+      }
+    },
+    {
+      "id": "q17",
+      "type": "paraphrase",
+      "query": "giving AI agents long-term memory across sessions",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.7438,
+          "recall@10": 0.5714,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "dense": {
+          "ndcg@10": 0.9458,
+          "recall@10": 0.6429,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "hybrid": {
+          "ndcg@10": 0.8559,
+          "recall@10": 0.6429,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.9227,
+          "recall@10": 0.6429,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "full": {
+          "ndcg@10": 0.9227,
+          "recall@10": 0.6429,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        }
+      }
+    },
+    {
+      "id": "q18",
+      "type": "paraphrase",
+      "query": "making video generation fast enough for real-time streaming",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.5391,
+          "recall@10": 0.5,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "dense": {
+          "ndcg@10": 0.78,
+          "recall@10": 0.7,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "hybrid": {
+          "ndcg@10": 0.5878,
+          "recall@10": 0.6,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.8172,
+          "recall@10": 0.8,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "full": {
+          "ndcg@10": 0.7843,
+          "recall@10": 0.8,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        }
+      }
+    },
+    {
+      "id": "q19",
+      "type": "paraphrase",
+      "query": "training agents that operate a computer's graphical interface",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.4502,
+          "recall@10": 0.4,
+          "mrr@10": 0.5,
+          "judged@10": 0.8
+        },
+        "dense": {
+          "ndcg@10": 0.6992,
+          "recall@10": 0.7,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "hybrid": {
+          "ndcg@10": 0.5381,
+          "recall@10": 0.5,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.6727,
+          "recall@10": 0.7,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        },
+        "full": {
+          "ndcg@10": 0.6946,
+          "recall@10": 0.7,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        }
+      }
+    },
+    {
+      "id": "q20",
+      "type": "paraphrase",
+      "query": "running models on Amazon's custom AI chips",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.2641,
+          "recall@10": 0.5,
+          "mrr@10": 0.25,
+          "judged@10": 0.7
+        },
+        "dense": {
+          "ndcg@10": 0.5641,
+          "recall@10": 1.0,
+          "mrr@10": 0.5,
+          "judged@10": 0.8
+        },
+        "hybrid": {
+          "ndcg@10": 0.2641,
+          "recall@10": 0.5,
+          "mrr@10": 0.25,
+          "judged@10": 0.8
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.6131,
+          "recall@10": 0.5,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "full": {
+          "ndcg@10": 0.6131,
+          "recall@10": 0.5,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        }
+      }
+    },
+    {
+      "id": "q21",
+      "type": "paraphrase",
+      "query": "AI systems copying themselves outside their own servers",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.7098,
+          "recall@10": 0.5,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        },
+        "dense": {
+          "ndcg@10": 0.9119,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        },
+        "hybrid": {
+          "ndcg@10": 0.8156,
+          "recall@10": 0.5,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.8611,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "full": {
+          "ndcg@10": 0.7197,
+          "recall@10": 0.5,
+          "mrr@10": 1.0,
+          "judged@10": 0.6
+        }
+      }
+    },
+    {
+      "id": "q22",
+      "type": "paraphrase",
+      "query": "using language models to mathematically prove that programs are correct",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.9371,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "dense": {
+          "ndcg@10": 0.1429,
+          "recall@10": 0.2857,
+          "mrr@10": 0.1429,
+          "judged@10": 0.8
+        },
+        "hybrid": {
+          "ndcg@10": 0.365,
+          "recall@10": 0.5714,
+          "mrr@10": 0.5,
+          "judged@10": 0.7
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.6498,
+          "recall@10": 0.5714,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        },
+        "full": {
+          "ndcg@10": 0.6498,
+          "recall@10": 0.5714,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        }
+      }
+    },
+    {
+      "id": "q23",
+      "type": "paraphrase",
+      "query": "speech synthesis that runs on a phone",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.4094,
+          "recall@10": 1.0,
+          "mrr@10": 0.1667,
+          "judged@10": 0.8
+        },
+        "dense": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "hybrid": {
+          "ndcg@10": 0.7098,
+          "recall@10": 1.0,
+          "mrr@10": 0.5,
+          "judged@10": 0.9
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.9828,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        },
+        "full": {
+          "ndcg@10": 0.9738,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        }
+      }
+    },
+    {
+      "id": "q24",
+      "type": "paraphrase",
+      "query": "keeping teenagers safe when they use chatbots",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.0,
+          "recall@10": 0.0,
+          "mrr@10": 0.0,
+          "judged@10": 0.7
+        },
+        "dense": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.5
+        },
+        "hybrid": {
+          "ndcg@10": 0.0,
+          "recall@10": 0.0,
+          "mrr@10": 0.0,
+          "judged@10": 0.5
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "full": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.6
+        }
+      }
+    },
+    {
+      "id": "q25",
+      "type": "time",
+      "query": "Anthropic announcements in early November 2026",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.8772,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "dense": {
+          "ndcg@10": 0.0,
+          "recall@10": 0.0,
+          "mrr@10": 0.0,
+          "judged@10": 0.8
+        },
+        "hybrid": {
+          "ndcg@10": 0.4575,
+          "recall@10": 1.0,
+          "mrr@10": 0.25,
+          "judged@10": 1.0
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.2641,
+          "recall@10": 0.5,
+          "mrr@10": 0.25,
+          "judged@10": 1.0
+        },
+        "full": {
+          "ndcg@10": 0.2641,
+          "recall@10": 0.5,
+          "mrr@10": 0.25,
+          "judged@10": 1.0
+        }
+      }
+    },
+    {
+      "id": "q26",
+      "type": "time",
+      "query": "new frontier models released in October 2026",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.0752,
+          "recall@10": 0.25,
+          "mrr@10": 0.1667,
+          "judged@10": 0.8
+        },
+        "dense": {
+          "ndcg@10": 0.5743,
+          "recall@10": 0.5,
+          "mrr@10": 1.0,
+          "judged@10": 0.6
+        },
+        "hybrid": {
+          "ndcg@10": 0.5572,
+          "recall@10": 0.5,
+          "mrr@10": 0.5,
+          "judged@10": 0.5
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.4575,
+          "recall@10": 0.5,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        },
+        "full": {
+          "ndcg@10": 0.4575,
+          "recall@10": 0.5,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        }
+      }
+    },
+    {
+      "id": "q27",
+      "type": "time",
+      "query": "OpenAI security announcements in November 2026",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.3537,
+          "recall@10": 0.75,
+          "mrr@10": 0.25,
+          "judged@10": 0.8
+        },
+        "dense": {
+          "ndcg@10": 0.7717,
+          "recall@10": 0.75,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        },
+        "hybrid": {
+          "ndcg@10": 0.776,
+          "recall@10": 0.75,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.852,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "full": {
+          "ndcg@10": 0.8457,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        }
+      }
+    },
+    {
+      "id": "q28",
+      "type": "time",
+      "query": "AI news from November 10, 2026",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.3524,
+          "recall@10": 1.0,
+          "mrr@10": 0.25,
+          "judged@10": 0.8
+        },
+        "dense": {
+          "ndcg@10": 0.5428,
+          "recall@10": 1.0,
+          "mrr@10": 0.2,
+          "judged@10": 0.8
+        },
+        "hybrid": {
+          "ndcg@10": 0.5518,
+          "recall@10": 1.0,
+          "mrr@10": 0.1667,
+          "judged@10": 0.8
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.3394,
+          "recall@10": 1.0,
+          "mrr@10": 0.1111,
+          "judged@10": 1.0
+        },
+        "full": {
+          "ndcg@10": 0.3394,
+          "recall@10": 1.0,
+          "mrr@10": 0.1111,
+          "judged@10": 1.0
+        }
+      }
+    },
+    {
+      "id": "q29",
+      "type": "time",
+      "query": "open-weight model releases on Hugging Face in October 2026",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.3191,
+          "recall@10": 0.5,
+          "mrr@10": 0.25,
+          "judged@10": 0.8
+        },
+        "dense": {
+          "ndcg@10": 0.5543,
+          "recall@10": 0.75,
+          "mrr@10": 0.5,
+          "judged@10": 1.0
+        },
+        "hybrid": {
+          "ndcg@10": 0.3923,
+          "recall@10": 0.75,
+          "mrr@10": 0.1667,
+          "judged@10": 1.0
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.6319,
+          "recall@10": 1.0,
+          "mrr@10": 0.3333,
+          "judged@10": 1.0
+        },
+        "full": {
+          "ndcg@10": 0.6319,
+          "recall@10": 1.0,
+          "mrr@10": 0.3333,
+          "judged@10": 1.0
+        }
+      }
+    },
+    {
+      "id": "q30",
+      "type": "time",
+      "query": "Google DeepMind robotics updates in November 2026",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.5485,
+          "recall@10": 0.25,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "dense": {
+          "ndcg@10": 0.493,
+          "recall@10": 0.75,
+          "mrr@10": 0.25,
+          "judged@10": 0.8
+        },
+        "hybrid": {
+          "ndcg@10": 0.6626,
+          "recall@10": 0.5,
+          "mrr@10": 1.0,
+          "judged@10": 0.6
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.6269,
+          "recall@10": 0.5,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        },
+        "full": {
+          "ndcg@10": 0.5485,
+          "recall@10": 0.25,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        }
+      }
+    },
+    {
+      "id": "q31",
+      "type": "cross_source",
+      "query": "reactions to the Gemini 4 Carbon launch",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.9742,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "dense": {
+          "ndcg@10": 0.922,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "hybrid": {
+          "ndcg@10": 0.9168,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.9195,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "full": {
+          "ndcg@10": 0.9195,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.6
+        }
+      }
+    },
+    {
+      "id": "q32",
+      "type": "cross_source",
+      "query": "Anthropic going public",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.1806,
+          "recall@10": 0.3333,
+          "mrr@10": 0.1429,
+          "judged@10": 1.0
+        },
+        "dense": {
+          "ndcg@10": 0.5373,
+          "recall@10": 1.0,
+          "mrr@10": 0.3333,
+          "judged@10": 1.0
+        },
+        "hybrid": {
+          "ndcg@10": 0.4964,
+          "recall@10": 1.0,
+          "mrr@10": 0.25,
+          "judged@10": 1.0
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.8862,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "full": {
+          "ndcg@10": 0.7959,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        }
+      }
+    },
+    {
+      "id": "q33",
+      "type": "cross_source",
+      "query": "AI agents finding vulnerabilities in Linux and other critical software",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.8158,
+          "recall@10": 0.8,
+          "mrr@10": 1.0,
+          "judged@10": 0.6
+        },
+        "dense": {
+          "ndcg@10": 0.1016,
+          "recall@10": 0.0,
+          "mrr@10": 0.0,
+          "judged@10": 0.7
+        },
+        "hybrid": {
+          "ndcg@10": 0.4701,
+          "recall@10": 0.6,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.8075,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "full": {
+          "ndcg@10": 0.8075,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        }
+      }
+    },
+    {
+      "id": "q34",
+      "type": "cross_source",
+      "query": "AI labs supporting scientific research and discovery",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.913,
+          "recall@10": 0.8571,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "dense": {
+          "ndcg@10": 0.8471,
+          "recall@10": 0.5714,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "hybrid": {
+          "ndcg@10": 0.895,
+          "recall@10": 0.7143,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.947,
+          "recall@10": 0.8571,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "full": {
+          "ndcg@10": 0.9033,
+          "recall@10": 0.8571,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        }
+      }
+    },
+    {
+      "id": "q35",
+      "type": "cross_source",
+      "query": "governments partnering with AI labs",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.8117,
+          "recall@10": 0.8571,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "dense": {
+          "ndcg@10": 0.4422,
+          "recall@10": 0.4286,
+          "mrr@10": 0.5,
+          "judged@10": 0.9
+        },
+        "hybrid": {
+          "ndcg@10": 0.694,
+          "recall@10": 0.5714,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.9169,
+          "recall@10": 0.8571,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "full": {
+          "ndcg@10": 0.9282,
+          "recall@10": 0.8571,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        }
+      }
+    },
+    {
+      "id": "q36",
+      "type": "cross_source",
+      "query": "the US and China competing over AI chips",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "dense": {
+          "ndcg@10": 0.9197,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "hybrid": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "full": {
+          "ndcg@10": 1.0,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.6
+        }
+      }
+    },
+    {
+      "id": "q37",
+      "type": "cross_source",
+      "query": "model distillation attacks and how labs defend against them",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.4398,
+          "recall@10": 0.5,
+          "mrr@10": 0.3333,
+          "judged@10": 1.0
+        },
+        "dense": {
+          "ndcg@10": 0.7911,
+          "recall@10": 0.5,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "hybrid": {
+          "ndcg@10": 0.8124,
+          "recall@10": 0.5,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.9132,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "full": {
+          "ndcg@10": 0.9262,
+          "recall@10": 1.0,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        }
+      }
+    },
+    {
+      "id": "q38",
+      "type": "cross_source",
+      "query": "agent harnesses and scaffolding for LLM agents",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.3364,
+          "recall@10": 0.2727,
+          "mrr@10": 1.0,
+          "judged@10": 0.6
+        },
+        "dense": {
+          "ndcg@10": 0.7109,
+          "recall@10": 0.7273,
+          "mrr@10": 1.0,
+          "judged@10": 0.9
+        },
+        "hybrid": {
+          "ndcg@10": 0.6661,
+          "recall@10": 0.5455,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.7498,
+          "recall@10": 0.6364,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "full": {
+          "ndcg@10": 0.6892,
+          "recall@10": 0.6364,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        }
+      }
+    },
+    {
+      "id": "q39",
+      "type": "cross_source",
+      "query": "how AI is changing jobs and the way people work",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.6881,
+          "recall@10": 0.7143,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "dense": {
+          "ndcg@10": 0.9578,
+          "recall@10": 0.8571,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "hybrid": {
+          "ndcg@10": 0.9505,
+          "recall@10": 0.8571,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.8973,
+          "recall@10": 0.7143,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        },
+        "full": {
+          "ndcg@10": 0.8133,
+          "recall@10": 0.7143,
+          "mrr@10": 1.0,
+          "judged@10": 1.0
+        }
+      }
+    },
+    {
+      "id": "q40",
+      "type": "cross_source",
+      "query": "world models for games and simulation",
+      "scores": {
+        "bm25": {
+          "ndcg@10": 0.6253,
+          "recall@10": 0.4167,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "dense": {
+          "ndcg@10": 0.5286,
+          "recall@10": 0.5,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        },
+        "hybrid": {
+          "ndcg@10": 0.5514,
+          "recall@10": 0.5,
+          "mrr@10": 1.0,
+          "judged@10": 0.7
+        },
+        "hybrid_rerank": {
+          "ndcg@10": 0.8131,
+          "recall@10": 0.6667,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        },
+        "full": {
+          "ndcg@10": 0.815,
+          "recall@10": 0.6667,
+          "mrr@10": 1.0,
+          "judged@10": 0.8
+        }
+      }
+    }
+  ]
+}

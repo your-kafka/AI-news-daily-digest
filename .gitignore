@@ -1,0 +1,33 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Tool caches and test output
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Secrets
+.env
+
+# Scraped data
+data/
+
+# Database dumps (large; publish them as release assets instead)
+*.dump
+
+# OS and editor files
+.DS_Store
+.vscode/
+*.code-workspace
+.claude/settings.local.json
