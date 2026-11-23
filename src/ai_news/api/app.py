@@ -4,12 +4,14 @@ import time
 from collections.abc import AsyncIterator, Callable, Iterator
 from contextlib import asynccontextmanager
 from datetime import UTC, date, datetime
+from pathlib import Path
 from typing import Annotated, Protocol
 
 import redis
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, Response
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from langchain_core.documents import Document
+from pydantic import ValidationError
 from sqlalchemy import select, text
 from sqlalchemy.exc import OperationalError, ProgrammingError
 from sqlalchemy.orm import Session
@@ -22,20 +24,24 @@ from ai_news.api.schemas import (
     QueuedTask,
     SearchMode,
     SearchResponse,
+    SubscriptionRequest,
+    SubscriptionResponse,
     to_detail,
     to_digest,
     to_hit,
 )
-from ai_news.config import RagSettings, worker_settings
+from ai_news.config import EmailSettings, RagSettings, email_settings, worker_settings
 from ai_news.db.models import DigestRecord, DocumentRecord
 from ai_news.db.session import get_engine, get_session_factory
 from ai_news.log_config import configure_logging
 from ai_news.pipelines.digest import Profile, load_profiles
 from ai_news.rag.pipeline import SearchPipeline
 from ai_news.scrapers.models import SourceName
+from ai_news.subscriptions import Outcome, confirm, subscribe, unsubscribe
 
 MAX_QUERY_CHARACTERS = 500
 MAX_RESULTS = 50
+DASHBOARD = Path(__file__).parent / "static" / "index.html"
 
 log = logging.getLogger(__name__)
 
@@ -87,6 +93,52 @@ def queue_refresh() -> str:
 
 def get_enqueuer() -> Callable[[], str]:
     return queue_refresh
+
+
+class Jobs:
+    """Background jobs the API hands to Celery; tests replace it."""
+
+    def send_confirmation(self, subscriber_id: int) -> None:
+        from ai_news.worker.tasks import send_confirmation_task
+
+        send_confirmation_task.delay(subscriber_id)
+
+    def send_first_digest(self, subscriber_id: int) -> None:
+        from ai_news.worker.tasks import subscriber_digest_task
+
+        subscriber_digest_task.delay(subscriber_id)
+
+
+def get_jobs() -> Jobs:
+    return Jobs()
+
+
+def get_email_settings() -> EmailSettings:
+    try:
+        return email_settings()
+    except ValidationError as error:
+        raise HTTPException(
+            status_code=503, detail="Email isn't set up on this server: set SMTP_USERNAME, SMTP_PASSWORD, EMAIL_FROM"
+        ) from error
+
+
+def message_page(title: str, message: str, status_code: int = 200) -> HTMLResponse:
+    from html import escape
+
+    page = (
+        "<!doctype html><html lang='en'><head><meta charset='utf-8'>"
+        "<meta name='viewport' content='width=device-width,initial-scale=1'>"
+        f"<title>{escape(title)} · Lodestar</title><style>"
+        ":root{color-scheme:light dark;--bg:#f6f7f9;--card:#fff;--ink:#1d2433;--muted:#6b7280;--accent:#3b5bdb}"
+        "@media (prefers-color-scheme:dark){:root{--bg:#0f1218;--card:#171b24;--ink:#e6e8ee;"
+        "--muted:#9aa3b2;--accent:#7b93ff}}"
+        "body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--ink);"
+        "font-family:-apple-system,Segoe UI,Roboto,sans-serif;padding:16px}"
+        ".card{max-width:440px;background:var(--card);border-radius:14px;padding:32px;text-align:center}"
+        "a{color:var(--accent)}</style></head><body><div class='card'>"
+        f"<h1>{escape(title)}</h1><p>{escape(message)}</p><p><a href='/'>Back to Lodestar</a></p></div></body></html>"
+    )
+    return HTMLResponse(page, status_code=status_code)
 
 
 def require_admin(authorization: Annotated[str | None, Header()] = None) -> None:
@@ -198,6 +250,51 @@ def create_app(searcher_factory: Callable[[], Searcher] = SearchPipeline.from_se
         if record is None:
             raise HTTPException(status_code=404, detail=f"Document {document_id} not found")
         return to_detail(record)
+
+    @app.get("/", include_in_schema=False)
+    def dashboard() -> FileResponse:
+        return FileResponse(DASHBOARD, media_type="text/html")
+
+    @app.post("/subscriptions", tags=["subscriptions"], status_code=202, responses={409: {"description": "Full"}})
+    def create_subscription(
+        request: SubscriptionRequest,
+        session: Annotated[Session, Depends(get_session)],
+        jobs: Annotated[Jobs, Depends(get_jobs)],
+        settings: Annotated[EmailSettings, Depends(get_email_settings)],
+    ) -> SubscriptionResponse:
+        """Asks for a daily digest by email. Nothing is sent but a confirmation email until its link is clicked.
+
+        The answer is the same whether or not the address is already subscribed, so the form can't be used to
+        find out who reads Lodestar.
+        """
+        result = subscribe(session, request.email, request.interests, datetime.now(UTC), settings.max_subscribers)
+        if result.outcome == Outcome.FULL:
+            raise HTTPException(status_code=409, detail="Lodestar isn't taking new subscribers right now")
+        session.commit()
+        if result.outcome == Outcome.SEND_CONFIRMATION:
+            jobs.send_confirmation(result.subscriber_id)
+        return SubscriptionResponse()
+
+    @app.get("/subscriptions/confirm", include_in_schema=False)
+    def confirm_subscription(
+        token: str, session: Annotated[Session, Depends(get_session)], jobs: Annotated[Jobs, Depends(get_jobs)]
+    ) -> HTMLResponse:
+        subscriber, activated = confirm(session, token, datetime.now(UTC))
+        if subscriber is None:
+            return message_page("Link not valid", "This confirmation link is wrong or has been replaced.", 404)
+        session.commit()
+        if activated:
+            jobs.send_first_digest(subscriber.id)
+            return message_page("You're subscribed", "Your first digest is being written and will arrive shortly.")
+        return message_page("Already confirmed", f"This subscription is {subscriber.status}.")
+
+    @app.get("/unsubscribe", include_in_schema=False)
+    def unsubscribe_page(token: str, session: Annotated[Session, Depends(get_session)]) -> HTMLResponse:
+        subscriber = unsubscribe(session, token, datetime.now(UTC))
+        if subscriber is None:
+            return message_page("Link not valid", "This unsubscribe link is wrong or has been replaced.", 404)
+        session.commit()
+        return message_page("Unsubscribed", "You won't get any more digests. You can subscribe again any time.")
 
     @app.get("/profiles", tags=["digest"])
     def profiles(known: Annotated[dict[str, Profile], Depends(get_profiles)]) -> list[ProfileSummary]:

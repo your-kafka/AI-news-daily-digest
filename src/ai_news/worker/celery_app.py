@@ -30,6 +30,10 @@ def beat_schedule(settings: WorkerSettings) -> dict[str, dict[str, Any]]:
             "task": "digest.build_all",
             "schedule": crontab(minute=0, hour=settings.digest_hour),
         },
+        "subscriber-digests": {
+            "task": "digest.send_subscribers",
+            "schedule": crontab(minute=0, hour=settings.digest_hour),
+        },
     }
 
 
@@ -43,7 +47,11 @@ def create_celery(settings: WorkerSettings) -> Celery:
         task_reject_on_worker_lost=True,
         worker_prefetch_multiplier=1,  # long tasks: don't let one worker hoard the queue
         task_track_started=True,
-        task_routes={"ingest.source": {"queue": INGEST_QUEUE}, "*": {"queue": INDEX_QUEUE}},
+        task_routes={
+            "ingest.source": {"queue": INGEST_QUEUE},
+            "email.*": {"queue": INGEST_QUEUE},  # network-bound, like the scrapers
+            "*": {"queue": INDEX_QUEUE},
+        },
         task_default_queue=INDEX_QUEUE,
         timezone=settings.schedule_timezone,
         enable_utc=True,

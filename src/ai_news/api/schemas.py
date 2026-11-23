@@ -2,7 +2,7 @@ from datetime import date, datetime
 from typing import Any, Literal
 
 from langchain_core.documents import Document
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 
 from ai_news.db.models import DigestRecord, DocumentRecord
 from ai_news.scrapers.models import ContentKind, SourceName
@@ -164,3 +164,13 @@ def to_digest(record: DigestRecord, title: str) -> DigestResponse:
         ),
         created_at=record.created_at,
     )
+
+
+class SubscriptionRequest(BaseModel):
+    email: EmailStr
+    interests: str = Field(min_length=3, max_length=500, description="What you want the daily digest to cover")
+
+
+class SubscriptionResponse(BaseModel):
+    status: Literal["check_your_inbox"] = "check_your_inbox"
+    message: str = "If this address can receive a digest, a confirmation email is on its way. Click its link to start."

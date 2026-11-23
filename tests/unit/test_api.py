@@ -115,6 +115,7 @@ def test_openapi_documents_every_endpoint(client):
         "/digest/latest",
         "/digest/{day}",
         "/admin/ingest",
+        "/subscriptions",
     }
 
 

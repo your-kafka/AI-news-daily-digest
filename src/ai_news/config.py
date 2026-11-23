@@ -71,6 +71,17 @@ class WorkerSettings(EnvSettings):
     admin_token: SecretStr | None = None
 
 
+class EmailSettings(EnvSettings):
+    smtp_host: str = "smtp.gmail.com"
+    smtp_port: int = 587
+    smtp_username: str
+    smtp_password: SecretStr
+    email_from: str
+    email_from_name: str = "Lodestar"
+    public_base_url: str = "http://127.0.0.1:8000"
+    max_subscribers: int = Field(default=25, gt=0)
+
+
 class GroqSettings(EnvSettings):
     groq_api_key: SecretStr
     groq_model: str
@@ -99,3 +110,8 @@ def groq_settings() -> GroqSettings:
 @lru_cache
 def worker_settings() -> WorkerSettings:
     return WorkerSettings()
+
+
+@lru_cache
+def email_settings() -> EmailSettings:
+    return EmailSettings()

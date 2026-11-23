@@ -134,6 +134,35 @@ class ChunkEmbeddingRecord(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
+class SubscriberStatus(StrEnum):
+    PENDING = "pending"
+    ACTIVE = "active"
+    UNSUBSCRIBED = "unsubscribed"
+
+
+class Subscriber(Base):
+    """Someone who gets a personal daily digest by email, after confirming the address (double opt-in)."""
+
+    __tablename__ = "subscribers"
+    __table_args__ = (
+        UniqueConstraint("email"),
+        UniqueConstraint("token"),
+        CheckConstraint(one_of("status", SubscriberStatus), name="status_known"),
+        Index(None, "status"),
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
+    email: Mapped[str] = mapped_column(String(254))
+    interests: Mapped[str] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(16), server_default=SubscriberStatus.PENDING.value)
+    token: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    confirmation_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    unsubscribed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_digest_on: Mapped[date | None] = mapped_column(Date)
+
+
 class DigestRecord(Base):
     """One curated digest per profile per day, with the token accounting behind it."""
 

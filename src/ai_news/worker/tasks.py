@@ -1,4 +1,5 @@
 import logging
+import smtplib
 from functools import cache
 from typing import Any
 
@@ -8,18 +9,23 @@ from groq import APIConnectionError, RateLimitError
 from sqlalchemy.exc import OperationalError
 
 from ai_news.config import worker_settings
-from ai_news.db.session import get_engine
+from ai_news.db.session import get_engine, get_session_factory
 from ai_news.log_config import configure_logging
-from ai_news.pipelines.digest import default_builder, load_profiles, run_digest
+from ai_news.notify.mailer import Mailer
+from ai_news.pipelines.digest import default_builder, load_profiles, local_today, run_digest
 from ai_news.pipelines.index import index_new_documents
 from ai_news.pipelines.ingest import ingest_source
+from ai_news.pipelines.subscriber_digest import send_confirmation, send_subscriber_digest
 from ai_news.rag.pipeline import SearchPipeline
 from ai_news.scrapers.registry import SCRAPERS
+from ai_news.subscriptions import due_subscribers
 from ai_news.worker.celery_app import app
 
 log = logging.getLogger(__name__)
 RETRY = {"autoretry_for": (OperationalError,), "retry_backoff": 30, "retry_jitter": True, "max_retries": 3}
 LLM_RETRY = {**RETRY, "autoretry_for": (OperationalError, RateLimitError, APIConnectionError), "retry_backoff": 60}
+EMAIL_RETRY = {**RETRY, "autoretry_for": (OperationalError, smtplib.SMTPException, OSError), "retry_backoff": 60}
+SUBSCRIBER_RETRY = {**LLM_RETRY, "autoretry_for": (*LLM_RETRY["autoretry_for"], smtplib.SMTPException, OSError)}
 
 
 @worker_process_init.connect
@@ -81,3 +87,24 @@ def build_all_digests() -> list[str]:
     profiles = load_profiles(worker_settings().profiles_file)
     group(build_digest_task.s(name) for name in profiles).apply_async()
     return list(profiles)
+
+
+@app.task(name="email.confirmation", **EMAIL_RETRY)
+def send_confirmation_task(subscriber_id: int) -> str:
+    return send_confirmation(subscriber_id, Mailer())
+
+
+@app.task(name="digest.subscriber", **SUBSCRIBER_RETRY)
+def subscriber_digest_task(subscriber_id: int) -> str:
+    return send_subscriber_digest(subscriber_id, lambda: default_builder(search_pipeline()), Mailer())
+
+
+@app.task(name="digest.send_subscribers")
+def send_subscriber_digests() -> list[int]:
+    from datetime import UTC, datetime
+
+    today = local_today(datetime.now(UTC), worker_settings().schedule_timezone)
+    with get_session_factory()() as session:
+        subscriber_ids = due_subscribers(session, today)
+    group(subscriber_digest_task.s(subscriber_id) for subscriber_id in subscriber_ids).apply_async()
+    return subscriber_ids

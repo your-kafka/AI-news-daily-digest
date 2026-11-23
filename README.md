@@ -401,6 +401,8 @@ Async **FastAPI** serves requests. **Celery** on **Redis** does background work,
 | `GET /search?q=&k=&source=&since=&mode=` | **Built.** `mode=quality` (default) runs stages 1–5; `mode=fast` runs dense retrieval only. Returns per-stage timings in the body and a `Server-Timing` header |
 | `GET /digest/latest?profile=`, `GET /digest/{date}?profile=`, `GET /profiles` | Precomputed curated digest with its token accounting (**built**) |
 | `GET /documents/{id}` | Metadata, a preview and a link to the original (**built**) |
+| `GET /` | Dashboard: subscribe with your interests and email, live preview of matching posts, today's digests (**built**) |
+| `POST /subscriptions`, `GET /subscriptions/confirm`, `GET /unsubscribe` | Email subscriptions with double opt-in; nothing is sent but one confirmation email until its link is clicked (**built**) |
 | `POST /admin/ingest` | Queue a scrape of every source, then indexing; needs `Authorization: Bearer $ADMIN_TOKEN` (**built**) |
 | `GET /healthz`, `GET /readyz` | Liveness; readiness (**built** for the database; Redis comes with the workers) |
 | `GET /metrics` | Prometheus: per-stage latency, ingest counts |
@@ -586,6 +588,8 @@ Still to come: `cli.py`, `api/`, `worker/`, `config/profiles.yaml`, `docker/Dock
 - [x] Celery on Redis: `ingest` and `index` queues, beat schedule, `acks_late`, retries, idempotent tasks (upserts; rebuilding a day replaces its digest)
 - [x] Digest per profile (`config/profiles.yaml`) with structured output on Groq and token accounting, real against naive, in `digests`
 - [ ] Two weeks of daily digests, to report the median token saving
+- [x] Email: Gmail SMTP (`notify/mailer.py`), personal digests per subscriber at 07:00 IST, double opt-in, `List-Unsubscribe`, one digest per person per day, retries reuse the saved digest
+- [x] Dashboard at `/`: subscribe form, live fast-search preview, today's digests with token savings
 - [x] Latency benchmark (`latency.py`, p50/p95/p99 per stage) and the rerank latency/quality sweep
 - [x] `fast` mode under 400 ms p95 (29 ms); `quality` mode stays at ~2.4 s on CPU
 - **Done when** `docker compose up` serves `/search` within budget and produces a daily digest.

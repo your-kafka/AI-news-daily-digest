@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lodestar · Daily AI digest</title>
+<meta name="description" content="A daily, personal digest of AI news from Anthropic, OpenAI, Google DeepMind, Hugging Face and YouTube.">
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f5f6f8; --surface: #ffffff; --surface-2: #f0f2f5; --border: #e3e6eb;
+    --ink: #161b26; --ink-2: #3d4554; --muted: #6b7384;
+    --accent: #3451d1; --accent-ink: #ffffff; --accent-soft: #e9edfc;
+    --good: #1c7c4c; --good-soft: #e5f4ec; --bad: #b42318; --bad-soft: #fdecea;
+    --radius: 14px; --shadow: 0 1px 2px rgb(16 24 40 / 6%), 0 4px 16px rgb(16 24 40 / 5%);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0d1016; --surface: #151a23; --surface-2: #1c2230; --border: #262d3b;
+      --ink: #e8ebf2; --ink-2: #c2c8d4; --muted: #8b94a6;
+      --accent: #7d93ff; --accent-ink: #0d1016; --accent-soft: #1f2744;
+      --good: #5fd39a; --good-soft: #13291f; --bad: #ff8a80; --bad-soft: #2f1716;
+      --shadow: none;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0d1016; --surface: #151a23; --surface-2: #1c2230; --border: #262d3b;
+    --ink: #e8ebf2; --ink-2: #c2c8d4; --muted: #8b94a6;
+    --accent: #7d93ff; --accent-ink: #0d1016; --accent-soft: #1f2744;
+    --good: #5fd39a; --good-soft: #13291f; --bad: #ff8a80; --bad-soft: #2f1716;
+    --shadow: none;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+  header { padding: 40px 0 24px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -0.01em; font-size: 18px; }
+  .brand svg { color: var(--accent); }
+  h1 { font-size: clamp(26px, 4vw, 38px); line-height: 1.15; letter-spacing: -0.02em; margin: 18px 0 8px; max-width: 20ch; }
+  .lede { color: var(--ink-2); max-width: 62ch; margin: 0; }
+  .sources { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .pill { font-size: 12px; padding: 3px 9px; border-radius: 999px; background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--border); }
+  .grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 20px; align-items: start; }
+  @media (max-width: 860px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px; }
+  .card h2 { font-size: 16px; margin: 0 0 4px; }
+  .hint { color: var(--muted); font-size: 13px; margin: 0 0 16px; }
+  label { display: block; font-weight: 600; font-size: 13px; margin: 16px 0 6px; }
+  textarea, input[type="email"] {
+    width: 100%; font: inherit; color: var(--ink); background: var(--surface-2);
+    border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; outline: none;
+  }
+  textarea { min-height: 96px; resize: vertical; }
+  textarea:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .chip {
+    font: inherit; font-size: 12.5px; cursor: pointer; padding: 5px 10px; border-radius: 999px;
+    border: 1px solid var(--border); background: transparent; color: var(--ink-2);
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .counter { text-align: right; font-size: 12px; color: var(--muted); margin-top: 4px; }
+  button.primary {
+    margin-top: 18px; width: 100%; font: inherit; font-weight: 600; cursor: pointer;
+    background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 10px; padding: 11px 16px;
+  }
+  button.primary:disabled { opacity: .6; cursor: progress; }
+  .notice { margin-top: 14px; padding: 10px 12px; border-radius: 10px; font-size: 14px; display: none; }
+  .notice.ok { display: block; background: var(--good-soft); color: var(--good); }
+  .notice.err { display: block; background: var(--bad-soft); color: var(--bad); }
+  .fine { font-size: 12px; color: var(--muted); margin: 12px 0 0; }
+  .preview-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .timing { font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .posts { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .post { padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+  .post .meta { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .post .title { font-weight: 600; line-height: 1.35; }
+  .post .snippet { color: var(--ink-2); font-size: 13.5px; margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .src { font-weight: 600; text-transform: capitalize; }
+  .empty { color: var(--muted); font-size: 14px; padding: 18px; text-align: center; border: 1px dashed var(--border); border-radius: 12px; }
+  .skeleton { height: 64px; border-radius: 12px; background: linear-gradient(90deg, var(--surface-2), var(--border), var(--surface-2)); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+  @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
+  section.digests { margin: 28px 0 48px; }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0 16px; }
+  .tab {
+    font: inherit; font-size: 13.5px; cursor: pointer; padding: 7px 12px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--ink-2);
+  }
+  .tab[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .stats { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+  .stat { background: var(--surface-2); border-radius: 10px; padding: 8px 12px; min-width: 120px; }
+  .stat b { display: block; font-size: 18px; letter-spacing: -0.01em; }
+  .stat span { font-size: 12px; color: var(--muted); }
+  .items { margin: 0; padding: 0; list-style: none; counter-reset: item; display: grid; gap: 14px; }
+  .item { counter-increment: item; padding-left: 34px; position: relative; }
+  .item::before {
+    content: counter(item); position: absolute; left: 0; top: 1px; width: 24px; height: 24px; border-radius: 7px;
+    background: var(--accent-soft); color: var(--accent); font-size: 12px; font-weight: 700; display: grid; place-items: center;
+  }
+  .item h3 { font-size: 15px; margin: 0 0 2px; }
+  .item p { margin: 0 0 4px; color: var(--ink-2); font-size: 14px; }
+  .item ul { margin: 0; padding-left: 16px; font-size: 13.5px; }
+  footer { color: var(--muted); font-size: 12.5px; padding: 0 0 32px; }
+  .theme { float: right; font: inherit; font-size: 12.5px; background: none; border: 1px solid var(--border); color: var(--ink-2); border-radius: 8px; padding: 4px 9px; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <button class="theme" id="theme" type="button" aria-label="Toggle colour theme">Theme</button>
+    <div class="brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l2.6 7.4L22 12l-7.4 2.6L12 22l-2.6-7.4L2 12l7.4-2.6L12 2z" fill="currentColor"/></svg>
+      Lodestar
+    </div>
+    <h1>The AI news you care about, every morning.</h1>
+    <p class="lede">Tell Lodestar what you follow. Each morning it searches the last day of posts, papers and videos and emails you a short digest picked for your interests.</p>
+    <div class="sources"><span class="pill">Anthropic</span><span class="pill">OpenAI</span><span class="pill">Google DeepMind</span><span class="pill">Hugging Face</span><span class="pill">YouTube</span></div>
+  </header>
+
+  <div class="grid">
+    <form class="card" id="subscribe" novalidate>
+      <h2>Get your daily digest</h2>
+      <p class="hint">Delivered at 07:00 IST. You confirm by email first, and every digest has an unsubscribe link.</p>
+
+      <label for="interests">What are you interested in?</label>
+      <textarea id="interests" maxlength="500" required placeholder="e.g. coding agents, open-weight model releases, AI security research"></textarea>
+      <div class="counter"><span id="count">0</span>/500</div>
+      <div class="chips" id="chips" aria-label="Quick picks"></div>
+
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="email" required placeholder="you@example.com">
+
+      <button class="primary" id="submit" type="submit">Send me the digest</button>
+      <div class="notice" id="notice" role="status" aria-live="polite"></div>
+      <p class="fine">Your email is used only to send this digest.</p>
+    </form>
+
+    <section class="card" aria-labelledby="preview-title">
+      <div class="preview-head">
+        <h2 id="preview-title">Preview: recent posts that match</h2>
+        <span class="timing" id="timing"></span>
+      </div>
+      <p class="hint">Updates as you type, from the last two weeks. Your digest is picked from posts like these.</p>
+      <ul class="posts" id="posts"><li class="empty">Type your interests or pick one above to see matching posts.</li></ul>
+    </section>
+  </div>
+
+  <section class="digests card" aria-labelledby="digests-title">
+    <h2 id="digests-title">Today's digests</h2>
+    <p class="hint">What the built-in reader profiles got this morning.</p>
+    <div class="tabs" id="tabs" role="tablist"></div>
+    <div id="digest"><div class="skeleton"></div></div>
+  </section>
+
+  <footer>Lodestar · hybrid retrieval (BM25 + vectors) with cross-encoder reranking and LLM curation · <a href="/docs">API docs</a></footer>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, props = {}, ...children) => {
+    const node = Object.assign(document.createElement(tag), props);
+    for (const child of children) node.append(child);
+    return node;
+  };
+  const dateLabel = (iso) => new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short" });
+  const number = (n) => n.toLocaleString();
+
+  // Theme toggle: remembered per browser, never required.
+  const root = document.documentElement;
+  try { const saved = localStorage.getItem("theme"); if (saved) root.dataset.theme = saved; } catch {}
+  $("theme").addEventListener("click", () => {
+    const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("theme", root.dataset.theme); } catch {}
+  });
+
+  // Live preview: fast (dense-only) search while typing.
+  const interests = $("interests"), posts = $("posts"), timing = $("timing");
+  let debounce, latest = 0;
+  async function preview() {
+    const q = interests.value.trim();
+    $("count").textContent = interests.value.length;
+    if (q.length < 3) { posts.replaceChildren(el("li", { className: "empty", textContent: "Type your interests or pick one above to see matching posts." })); timing.textContent = ""; return; }
+    const ticket = ++latest;
+    posts.replaceChildren(...Array.from({ length: 3 }, () => el("li", { className: "skeleton" })));
+    const since = new Date(Date.now() - 14 * 864e5).toISOString();
+    try {
+      const response = await fetch(`/search?${new URLSearchParams({ q, mode: "fast", k: "6", since })}`);
+      if (!response.ok) throw new Error(response.status);
+      const body = await response.json();
+      if (ticket !== latest) return;
+      timing.textContent = `${body.took_ms} ms`;
+      posts.replaceChildren(...(body.results.length ? body.results.map((hit) => el("li", { className: "post" },
+        el("div", { className: "meta" }, el("span", { className: "src", textContent: hit.source }), el("span", { textContent: dateLabel(hit.published_at) })),
+        el("a", { className: "title", href: hit.url, target: "_blank", rel: "noopener", textContent: hit.title }),
+        el("div", { className: "snippet", textContent: hit.snippet }),
+      )) : [el("li", { className: "empty", textContent: "Nothing matched in the last two weeks. Try broader words." })]));
+    } catch {
+      if (ticket === latest) posts.replaceChildren(el("li", { className: "empty", textContent: "Preview unavailable right now." }));
+    }
+  }
+  interests.addEventListener("input", () => { clearTimeout(debounce); debounce = setTimeout(preview, 350); });
+
+  // Subscribe.
+  const notice = $("notice"), submit = $("submit");
+  const show = (kind, text) => { notice.className = `notice ${kind}`; notice.textContent = text; };
+  $("subscribe").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const email = $("email").value.trim(), text = interests.value.trim();
+    if (text.length < 3) return show("err", "Tell us a little more about what you're interested in.");
+    if (!$("email").checkValidity() || !email) return show("err", "Enter a valid email address.");
+    submit.disabled = true; submit.textContent = "Sending…";
+    try {
+      const response = await fetch("/subscriptions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, interests: text }) });
+      const body = await response.json().catch(() => ({}));
+      if (response.ok) show("ok", "Check your inbox: we sent a confirmation link. Your digests start once you click it.");
+      else if (response.status === 422) show("err", "That email address doesn't look right.");
+      else show("err", body.detail || "Something went wrong. Please try again.");
+    } catch { show("err", "Couldn't reach the server. Please try again."); }
+    finally { submit.disabled = false; submit.textContent = "Send me the digest"; }
+  });
+
+  // Profiles: quick-pick chips and digest tabs.
+  const tabs = $("tabs"), digest = $("digest");
+  async function showDigest(profile, button) {
+    for (const tab of tabs.children) tab.setAttribute("aria-selected", tab === button);
+    digest.replaceChildren(el("div", { className: "skeleton" }));
+    const response = await fetch(`/digest/latest?${new URLSearchParams({ profile })}`);
+    if (!response.ok) { digest.replaceChildren(el("p", { className: "empty", textContent: "No digest for this profile yet. One is built every morning." })); return; }
+    const d = await response.json();
+    const saved = Math.round(d.tokens.saved * 100);
+    digest.replaceChildren(
+      el("div", { className: "stats" },
+        el("div", { className: "stat" }, el("b", { textContent: dateLabel(d.digest_date) }), el("span", { textContent: "digest date" })),
+        el("div", { className: "stat" }, el("b", { textContent: number(d.documents_in_window) }), el("span", { textContent: "new posts scanned" })),
+        el("div", { className: "stat" }, el("b", { textContent: d.items.length }), el("span", { textContent: "stories picked" })),
+        el("div", { className: "stat" }, el("b", { textContent: `${saved}%` }), el("span", { textContent: `fewer LLM tokens (${number(d.tokens.input_tokens)} vs ${number(d.tokens.naive_input_tokens)})` })),
+      ),
+      d.items.length ? el("ol", { className: "items" }, ...d.items.map((item) => el("li", { className: "item" },
+        el("h3", { textContent: item.headline }),
+        el("p", { textContent: item.why_it_matters }),
+        el("ul", {}, ...item.documents.map((doc) => el("li", {}, el("a", { href: doc.url, target: "_blank", rel: "noopener", textContent: doc.title }), ` · ${doc.source}`))),
+      ))) : el("p", { className: "empty", textContent: "Nothing notable for this profile today." }),
+    );
+  }
+  fetch("/profiles").then((r) => r.json()).then((profiles) => {
+    for (const [index, profile] of profiles.entries()) {
+      $("chips").append(el("button", { type: "button", className: "chip", textContent: profile.title, onclick: () => { interests.value = profile.interests; preview(); interests.focus(); } }));
+      const tab = el("button", { type: "button", className: "tab", role: "tab", textContent: profile.title });
+      tab.addEventListener("click", () => showDigest(profile.name, tab));
+      tabs.append(tab);
+      if (index === 0) showDigest(profile.name, tab);
+    }
+  }).catch(() => digest.replaceChildren(el("p", { className: "empty", textContent: "Couldn't load the digests." })));
+})();
+</script>
+</body>
+</html>
