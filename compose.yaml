@@ -1,5 +1,43 @@
 name: lodestar
 
+# Local development:  docker compose up -d --wait               → db + redis only; run the app with uv
+# Whole app locally:   docker compose --profile app up -d --wait  → also api, workers, beat (http://127.0.0.1:8000)
+# Server:              COMPOSE_PROFILES=app,proxy in .env, then docker compose up -d --wait  → adds Caddy + HTTPS
+
+x-app: &app
+  image: ${LODESTAR_IMAGE:-lodestar:local}
+  build:
+    context: .
+    dockerfile: docker/Dockerfile
+  restart: unless-stopped
+  env_file: .env
+  environment:
+    POSTGRES_HOST: db
+    POSTGRES_PORT: "5432"
+    REDIS_URL: redis://redis:6379/0
+  volumes:
+    - models:/models
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+    migrate:
+      condition: service_completed_successfully
+  profiles: [app]
+  read_only: true
+  tmpfs:
+    - /tmp
+  security_opt:
+    - no-new-privileges:true
+
+x-worker-health: &worker-health
+  test: ["CMD-SHELL", "celery -A ai_news.worker.celery_app inspect ping -d $$WORKER_NAME@$$HOSTNAME --timeout 10 | grep -q pong"]
+  interval: 60s
+  timeout: 20s
+  retries: 3
+  start_period: 60s
+
 services:
   db:
     image: paradedb/paradedb:0.26.0-pg18
@@ -33,6 +71,68 @@ services:
       timeout: 3s
       retries: 10
 
+  migrate:
+    <<: *app
+    restart: "no"
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      disable: true
+
+  api:
+    <<: *app
+    ports:
+      - "127.0.0.1:${API_PORT:-8000}:8000"
+
+  worker-ingest:
+    <<: *app
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      REDIS_URL: redis://redis:6379/0
+      WORKER_NAME: ingest
+    command: ["celery", "-A", "ai_news.worker.celery_app", "worker", "-Q", "ingest", "-P", "threads", "-c", "4", "-n", "ingest@%h"]
+    healthcheck: *worker-health
+
+  worker-index:
+    <<: *app
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      REDIS_URL: redis://redis:6379/0
+      WORKER_NAME: index
+    command: ["celery", "-A", "ai_news.worker.celery_app", "worker", "-Q", "index", "-P", "solo", "-n", "index@%h"]
+    healthcheck: *worker-health
+
+  beat:
+    <<: *app
+    command: ["celery", "-A", "ai_news.worker.celery_app", "beat", "--schedule", "/tmp/celerybeat-schedule"]
+    healthcheck:
+      disable: true
+
+  caddy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    profiles: [proxy]
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}  # on the server: your domain, or <ip-with-dashes>.sslip.io
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+
 volumes:
   postgres-data:
   redis-data:
+  models:
+  caddy-data:
+  caddy-config:

@@ -48,6 +48,32 @@ uv run celery -A ai_news.worker.celery_app call digest.build_all                
 
 If one source fails, the others are still saved, and every run is logged in the `ingest_runs` table. `docker compose down` stops the database and keeps the data; `docker compose down -v` deletes it.
 
+### Docker
+
+One image (`docker/Dockerfile`: multi-stage, non-root, read-only filesystem) runs every app service. Profiles keep local development light:
+
+```bash
+docker compose up -d --wait                       # db + redis only (run the app with uv)
+docker compose --profile app up -d --wait --build  # + migrate, api, worker-ingest, worker-index, beat → http://127.0.0.1:8000
+```
+
+| Service | Role | Health check |
+|---|---|---|
+| `db` | PostgreSQL 18 + pgvector + pg_search (ParadeDB) | `pg_isready` |
+| `redis` | Celery broker and result backend | `redis-cli ping` |
+| `migrate` | `alembic upgrade head`, then exits; app services wait for it | must exit 0 |
+| `api` | FastAPI on uvicorn: dashboard, search, digests, subscriptions | `GET /healthz` |
+| `worker-ingest` | Scrapers and emails (threads) | `celery inspect ping` |
+| `worker-index` | Chunking, embeddings, digests (one at a time) | `celery inspect ping` |
+| `beat` | The schedule: refresh every 6 h, digests at 07:00 IST | — |
+| `caddy` | HTTPS reverse proxy with automatic Let's Encrypt certificates (server only) | — |
+
+Measured on an M2 laptop: image 804 MB; memory about 1.5 GB at rest and 2.3 GB while a digest runs, so a server needs 4 GB of RAM.
+
+### Deploying to a server
+
+`docker/deploy.sh <server-ip> <key.pem> [--with-data]` installs Docker on an Ubuntu server, copies the image over SSH (no registry needed), writes the server's `.env` (profiles `app,proxy`, `PUBLIC_BASE_URL`, an `ADMIN_TOKEN`), optionally copies the local database, and starts everything. Without a domain the site is served at `https://<ip-with-dashes>.sslip.io` with a real certificate. The image's CPU type must match the server's: an Apple Silicon build runs on AWS Graviton (`t4g.medium`).
+
 ### Tests
 
 ```bash
