@@ -1,0 +1,25 @@
+{
+  "created_at": "2026-11-23T12:13:28+00:00",
+  "machine": "Darwin arm64, Python 3.12.3",
+  "requests": 200,
+  "mode": "fast",
+  "concurrency": 4,
+  "k": 10,
+  "throughput_rps": 70.06,
+  "end_to_end_ms": {
+    "p50": 52.5,
+    "p95": 70.7,
+    "p99": 178.2,
+    "mean": 56.6,
+    "max": 188.6
+  },
+  "stages_ms": {
+    "1 dense candidates": {
+      "p50": 45.3,
+      "p95": 64.3,
+      "p99": 172.7,
+      "mean": 48.6,
+      "max": 185.4
+    }
+  }
+}

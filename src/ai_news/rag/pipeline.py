@@ -14,7 +14,7 @@ from ai_news.config import GroqSettings, RagSettings, groq_settings, rag_setting
 from ai_news.log_config import configure_logging
 from ai_news.rag.curation import CurationResult, Curator
 from ai_news.rag.embeddings import FastEmbedEmbeddings, export_hf_token
-from ai_news.rag.ranking import maximal_marginal_relevance, pool, reciprocal_rank_fusion
+from ai_news.rag.ranking import first_per_document, maximal_marginal_relevance, pool, reciprocal_rank_fusion
 from ai_news.rag.reranker import CrossEncoderReranker
 from ai_news.rag.retriever import EMBEDDING_KEY, Bm25Retriever, PgVectorRetriever, build_expander
 
@@ -32,7 +32,11 @@ class SearchPipeline:
         settings = settings or rag_settings()
         export_hf_token()
         embeddings = FastEmbedEmbeddings(settings.embedding_model, cache_dir=settings.model_cache_dir)
-        reranker = CrossEncoderReranker(settings.rerank_model, cache_dir=settings.model_cache_dir)
+        reranker = CrossEncoderReranker(
+            settings.rerank_model,
+            cache_dir=settings.model_cache_dir,
+            max_characters=settings.rerank_passage_characters,
+        )
         return cls(settings, embeddings, reranker)
 
     def search(
@@ -41,30 +45,54 @@ class SearchPipeline:
         limit: int | None = None,
         since: datetime | None = None,
         sources: list[str] | None = None,
+        timings: dict[str, float] | None = None,
     ) -> list[Document]:
+        """Runs stages 1-5. Pass a dict as `timings` to receive each stage's duration in milliseconds."""
         settings = self.settings
         candidates = settings.retrieval_candidates
         retrievers = RunnableParallel(
             bm25=Bm25Retriever(top_k=candidates, since=since, sources=sources),
             dense=PgVectorRetriever(embeddings=self.embeddings, top_k=candidates, since=since, sources=sources),
         )
-        results = timed("1 hybrid candidates", lambda: retrievers.batch(list(queries)))
+        results = timed("1 hybrid candidates", lambda: retrievers.batch(list(queries)), timings)
         rankings = [ranking for result in results for ranking in result.values()]
         for name in ("bm25", "dense"):
             log.info("  %s: %d chunks", name, sum(len(result[name]) for result in results))
-        chunks = timed("2 rrf", lambda: reciprocal_rank_fusion(rankings, settings.rrf_k))
-        posts = timed("3 pooling", lambda: pool(chunks, settings.pooling_method, settings.pool_size))
-        posts = timed("4 cross-encoder", lambda: self.reranker.rerank(queries, posts, settings.rerank_keep))
+        chunks = timed("2 rrf", lambda: reciprocal_rank_fusion(rankings, settings.rrf_k), timings)
+        posts = timed("3 pooling", lambda: pool(chunks, settings.pooling_method, settings.pool_size), timings)
+        posts = timed("4 cross-encoder", lambda: self.reranker.rerank(queries, posts, settings.rerank_keep), timings)
         final_count = limit or settings.retrieval_top_k
-        posts = timed("5 mmr", lambda: maximal_marginal_relevance(posts, settings.mmr_lambda, final_count))
+        posts = timed("5 mmr", lambda: maximal_marginal_relevance(posts, settings.mmr_lambda, final_count), timings)
+        return [without_embedding(post) for post in posts]
+
+    def search_fast(
+        self,
+        queries: Sequence[str],
+        limit: int | None = None,
+        since: datetime | None = None,
+        sources: list[str] | None = None,
+        timings: dict[str, float] | None = None,
+    ) -> list[Document]:
+        """Dense retrieval only, one chunk per document: the best quality measured without the cross-encoder."""
+        retriever = PgVectorRetriever(
+            embeddings=self.embeddings, top_k=self.settings.retrieval_candidates, since=since, sources=sources
+        )
+        chunks = timed(
+            "1 dense candidates", lambda: [chunk for query in queries for chunk in retriever.invoke(query)], timings
+        )
+        chunks.sort(key=lambda chunk: chunk.metadata["similarity"], reverse=True)
+        posts = first_per_document(chunks, limit or self.settings.retrieval_top_k)
         return [without_embedding(post) for post in posts]
 
 
-def timed[T](stage: str, run: Callable[[], T]) -> T:
+def timed[T](stage: str, run: Callable[[], T], timings: dict[str, float] | None = None) -> T:
     started = time.perf_counter()
     result = run()
+    elapsed_ms = (time.perf_counter() - started) * 1000
+    if timings is not None:
+        timings[stage] = elapsed_ms
     count = f", {len(result)} results" if isinstance(result, list) else ""
-    log.info("stage %-19s %6.0f ms%s", stage, (time.perf_counter() - started) * 1000, count)
+    log.info("stage %-19s %6.0f ms%s", stage, elapsed_ms, count)
     return result
 
 

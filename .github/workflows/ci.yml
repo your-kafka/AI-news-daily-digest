@@ -40,12 +40,22 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 20
+      redis:
+        image: redis:8.2-alpine
+        ports:
+          - 6380:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
     env:
       POSTGRES_HOST: localhost
       POSTGRES_PORT: 5433
       POSTGRES_DB: lodestar
       POSTGRES_USER: lodestar
       POSTGRES_PASSWORD: ci-only-password
+      REDIS_URL: redis://localhost:6380/0
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6

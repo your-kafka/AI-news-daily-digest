@@ -12,15 +12,22 @@ BATCH_SIZE = 32
 
 
 class CrossEncoderReranker:
-    def __init__(self, model_name: str, cache_dir: Path | None = None, batch_size: int = BATCH_SIZE) -> None:
+    def __init__(
+        self,
+        model_name: str,
+        cache_dir: Path | None = None,
+        batch_size: int = BATCH_SIZE,
+        max_characters: int | None = None,
+    ) -> None:
         self.model_name = model_name
         self.batch_size = batch_size
+        self.max_characters = max_characters
         self.model = TextCrossEncoder(model_name=model_name, cache_dir=str(cache_dir) if cache_dir else None)
 
     def rerank(self, queries: Sequence[str], posts: Sequence[Document], limit: int = 20) -> list[Document]:
         if not posts or not queries:
             return []
-        passages = [embedding_text(post) for post in posts]
+        passages = [embedding_text(post)[: self.max_characters] for post in posts]
         per_query = [list(self.model.rerank(query, passages, batch_size=self.batch_size)) for query in queries]
         scores = [max(post_scores) for post_scores in zip(*per_query, strict=True)]
         ranked = sorted(zip(posts, scores, strict=True), key=lambda pair: pair[1], reverse=True)

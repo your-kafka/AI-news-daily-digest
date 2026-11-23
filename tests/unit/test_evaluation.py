@@ -24,7 +24,8 @@ from ai_news.evaluation.labeling import (
     in_query_order,
     keep_human_grades,
 )
-from ai_news.evaluation.pooling import first_occurrence, round_robin, to_pooled
+from ai_news.evaluation.pooling import round_robin, to_pooled
+from ai_news.rag.ranking import first_per_document
 from tests.conftest import make_post
 
 
@@ -94,9 +95,10 @@ class TestDataset:
 
 
 class TestPooling:
-    def test_first_occurrence_keeps_each_documents_best_chunk(self):
+    def test_first_per_document_keeps_each_documents_best_chunk(self):
         chunks = [make_post("a", 1), make_post("a", 1), make_post("b", 2)]
-        assert [chunk.metadata["source_id"] for chunk in first_occurrence(chunks)] == ["a", "b"]
+        assert [chunk.metadata["source_id"] for chunk in first_per_document(chunks)] == ["a", "b"]
+        assert len(first_per_document(chunks, limit=1)) == 1
 
     RANKINGS = {
         "bm25": [make_post("a"), make_post("b"), make_post("c")],

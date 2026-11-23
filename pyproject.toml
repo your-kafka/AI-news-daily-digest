@@ -9,7 +9,9 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.20.0",
+    "celery[redis]>=5.7.0",
     "defusedxml>=0.7.1",
+    "fastapi>=0.162.4",
     "fastembed>=0.9.1",
     "feedparser>=6.0.14",
     "httpx>=0.28.1",
@@ -21,9 +23,12 @@ dependencies = [
     "psycopg[binary]>=3.3.6",
     "pydantic>=2.13.5",
     "pydantic-settings>=2.15.0",
+    "pyyaml>=6.0.3",
     "sqlalchemy>=2.1.4",
+    "tiktoken>=0.14.0",
     "tokenizers>=0.23.2",
     "trafilatura>=2.3.1",
+    "uvicorn[standard]>=0.54.0",
     "youtube-transcript-api>=1.2.4",
 ]
 

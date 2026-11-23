@@ -22,21 +22,11 @@ from ai_news.evaluation.dataset import (
 )
 from ai_news.log_config import configure_logging
 from ai_news.rag.pipeline import SearchPipeline
-from ai_news.rag.ranking import pool, reciprocal_rank_fusion
+from ai_news.rag.ranking import first_per_document, pool, reciprocal_rank_fusion
 from ai_news.rag.retriever import Bm25Retriever, PgVectorRetriever
 
 SYSTEMS = ("bm25", "dense", "hybrid", "hybrid_rerank")
 POOL_DEPTH = 15
-
-
-def first_occurrence(chunks: Sequence[Document]) -> list[Document]:
-    seen: set[int] = set()
-    posts = []
-    for chunk in chunks:
-        if chunk.metadata["document_id"] not in seen:
-            seen.add(chunk.metadata["document_id"])
-            posts.append(chunk)
-    return posts
 
 
 def system_rankings(pipeline: SearchPipeline, query: str) -> dict[str, list[Document]]:
@@ -45,8 +35,8 @@ def system_rankings(pipeline: SearchPipeline, query: str) -> dict[str, list[Docu
     dense = PgVectorRetriever(embeddings=pipeline.embeddings, top_k=settings.retrieval_candidates).invoke(query)
     hybrid = pool(reciprocal_rank_fusion([bm25, dense], settings.rrf_k), settings.pooling_method, settings.pool_size)
     return {
-        "bm25": first_occurrence(bm25),
-        "dense": first_occurrence(dense),
+        "bm25": first_per_document(bm25),
+        "dense": first_per_document(dense),
         "hybrid": hybrid,
         "hybrid_rerank": pipeline.reranker.rerank([query], hybrid, settings.rerank_keep),
     }

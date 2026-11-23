@@ -52,6 +52,7 @@ def reranker():
     instance = CrossEncoderReranker.__new__(CrossEncoderReranker)
     instance.model_name = "fake"
     instance.batch_size = 32
+    instance.max_characters = None
     instance.model = FakeCrossEncoder()
     return instance
 

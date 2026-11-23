@@ -1,0 +1,18 @@
+# One daily digest per profile. `interests` is what the reader cares about, in plain words:
+# the LLM turns it into search queries, and the curator picks stories that match it.
+profiles:
+  - name: frontier-models
+    title: Frontier model releases
+    interests: New frontier and open-weight model releases, benchmarks, model cards and capability evaluations
+
+  - name: agents-and-tooling
+    title: Agents and dev tooling
+    interests: AI agents, coding agents, tool use, agent frameworks, computer-use agents and developer tooling for LLM apps
+
+  - name: safety-and-policy
+    title: Safety and policy
+    interests: AI safety research, alignment, security vulnerabilities, regulation, government policy and responsible deployment
+
+  - name: papers
+    title: Papers worth reading
+    interests: Notable new machine learning research papers on reasoning, training methods, retrieval and efficiency

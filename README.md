@@ -24,6 +24,17 @@ uv run python src/ai_news/pipelines/ingest.py
 uv run python src/ai_news/rag/chunker.py
 uv run python src/ai_news/rag/embeddings.py
 uv run python src/ai_news/rag/pipeline.py
+uv run uvicorn ai_news.api.app:app       # API on http://127.0.0.1:8000, docs at /docs
+```
+
+Background jobs (Redis starts with `docker compose up`), each in its own terminal:
+
+```bash
+uv run celery -A ai_news.worker.celery_app worker -Q ingest -P threads -c 4 -n ingest@%h   # scrapers
+uv run celery -A ai_news.worker.celery_app worker -Q index -P solo -n index@%h             # chunk, embed, digest
+uv run celery -A ai_news.worker.celery_app beat                                          # every 6 h: refresh; 07:00 IST: digests
+uv run celery -A ai_news.worker.celery_app call ingest.refresh --kwargs '{"hours": 24}'   # run a refresh now
+uv run celery -A ai_news.worker.celery_app call digest.build_all                          # build today's digests now
 ```
 
 | Step | What it does |
@@ -294,23 +305,52 @@ flowchart LR
 
 `/search` runs stages 1–5. Stage 6 runs only in the digest job and in offline evaluation, which keeps the LLM out of the request path.
 
-**Latency budget for `/search`.** These are estimates, to be replaced by k6 measurements in Phase 6:
+**Latency of `/search`, measured.** `src/ai_news/evaluation/latency.py` replays the 40 eval queries 5 times (200 requests, one at a time, after a warm-up) against the running API on an Apple M2 laptop CPU (4 performance + 4 efficiency cores), 2026-11-11:
 
-| Step | p95 budget |
-|---|---|
-| Query embedding (cached in Redis) | 15 ms |
-| BM25 and HNSW in parallel | 40 ms |
-| RRF + pooling + MMR | 15 ms |
-| Cross-encoder, 30 pairs on CPU | 200 ms |
-| Framework + network | 30 ms |
-| **Total** | **~300 ms** (target under 400 ms) |
+| Step | p50 | p95 |
+|---|---|---|
+| 1. BM25 + HNSW candidates (includes query embedding) | 84 ms | 152 ms |
+| 2–3. RRF + pooling | 1 ms | 2 ms |
+| 4. Cross-encoder, 30 posts × full passages (~450 tokens) | 1,597 ms | 2,109 ms |
+| 5. MMR | 1 ms | 3 ms |
+| **End to end (client)** | **1,702 ms** | **2,355 ms** |
+
+The original estimate gave the cross-encoder 200 ms; it really takes ~95% of the request. Thread pinning doesn't help (ONNX Runtime's default is fastest) and `jina-reranker-v1-tiny-en` is only ~13% faster. Cost grows with passage length and candidate count, so `rerank_sweep.py` measured both against nDCG@10 (LLM-judged grades; cross-encoder time only):
+
+| Candidates | Passage | nDCG@10 (rerank) | nDCG@10 (full, + MMR) | Cross-encoder p95 |
+|---|---|---|---|---|
+| 30 | full | **0.826** | **0.805** | 2,810 ms |
+| 30 | 600 chars | 0.798 | 0.764 | 919 ms |
+| 20 | 400 chars | 0.765 | 0.722 | 364 ms |
+| 15 | 600 chars | 0.768 | 0.748 | 419 ms |
+| 15 | 400 chars | 0.766 | 0.734 | 306 ms |
+
+Every setting fast enough for a 400 ms budget on this CPU scores below dense-only retrieval (0.752). So `/search` has two modes instead of one compromise:
+
+| Mode | What runs | nDCG@10 | p95, 1 client | p95, 4 clients |
+|---|---|---|---|---|
+| `quality` (default) | Stages 1–5 | 0.805 (0.826 before MMR) | 2,355 ms | — |
+| `fast` | Dense retrieval only, one chunk per post | 0.752 | **29 ms** | **71 ms** |
+
+`fast` returns exactly the ranking the evaluation scored as "dense only" (an integration test checks this). `RERANK_PASSAGE_CHARACTERS` and `POOL_SIZE` still trade quality-mode accuracy for speed. Judged@10 also falls as passages shrink, so part of those drops is unjudged documents, not worse ranking. Full table: `eval/results/rerank_sweep.json`.
 
 Models load once at startup, and CPU-bound inference runs in a thread pool so the async event loop never blocks. If the cross-encoder runs over budget, the fix is to send it fewer pairs or shorter passages.
 
-**Digest token budget.** The naive digest pastes every document from the last 24 hours into one prompt, about 180K tokens. Lodestar sends about 15 candidates per profile, each as a title plus its best passage, about 7K tokens. Both numbers are measured:
+**Digest token budget.** The naive digest pastes every document from the last 24 hours into one curation prompt. Lodestar instead expands the profile into queries, retrieves 15 candidates and sends each as a title plus its best passage. Every digest row in `digests` stores both numbers:
 
-- The naive figure is counted with the model's tokenizer on the same day's documents.
-- The real figure comes from each response's `usage` field and is logged to `digests`.
+- **Naive:** the full curation prompt with every document in the window, counted with the o200k tokenizer that gpt-oss uses (`tiktoken`).
+- **Real:** the `usage` Groq reports for **every** LLM call in the run, query expansion and curation together.
+
+First measured run, 2026-11-23, `openai/gpt-oss-20b`, a quiet 24-hour window with 25 new documents (19 papers, 6 videos):
+
+| Profile | Items | Real input tokens | Naive input tokens | Fewer |
+|---|---|---|---|---|
+| frontier-models | 9 | 5,678 | 25,271 | 78% |
+| agents-and-tooling | 7 | 5,459 | 25,278 | 78% |
+| safety-and-policy | 4 | 5,415 | 25,272 | 79% |
+| papers | 10 | 5,751 | 25,272 | 77% |
+
+The real cost stays near 5.5K whatever the day's volume, because it's capped at 15 candidates; the naive cost grows with every document published. The original ~180K naive estimate assumed a much busier day, so the saving has to be reported as a median over many daily runs, not from one day.
 
 Groq's free tier has no per-token bill, but it enforces per-minute and per-day token limits (see your account's limits page), so the smaller prompt is what keeps a daily run inside them.
 
@@ -358,11 +398,11 @@ Async **FastAPI** serves requests. **Celery** on **Redis** does background work,
 
 | Endpoint | Purpose |
 |---|---|
-| `GET /search?q=&k=&source=&since=` | Stages 1–5 |
-| `GET /digest/latest`, `GET /digest/{date}` | Precomputed curated digest |
-| `GET /documents/{id}` | Metadata, snippets and a link to the original |
-| `POST /admin/ingest` | Trigger an ingest run (token-protected) |
-| `GET /healthz`, `GET /readyz` | Liveness; readiness (DB and Redis reachable) |
+| `GET /search?q=&k=&source=&since=&mode=` | **Built.** `mode=quality` (default) runs stages 1–5; `mode=fast` runs dense retrieval only. Returns per-stage timings in the body and a `Server-Timing` header |
+| `GET /digest/latest?profile=`, `GET /digest/{date}?profile=`, `GET /profiles` | Precomputed curated digest with its token accounting (**built**) |
+| `GET /documents/{id}` | Metadata, a preview and a link to the original (**built**) |
+| `POST /admin/ingest` | Queue a scrape of every source, then indexing; needs `Authorization: Bearer $ADMIN_TOKEN` (**built**) |
+| `GET /healthz`, `GET /readyz` | Liveness; readiness (**built** for the database; Redis comes with the workers) |
 | `GET /metrics` | Prometheus: per-stage latency, ingest counts |
 
 **Schedule (Celery beat):**
@@ -422,7 +462,7 @@ The targets come from the project brief. The **Measured** column is filled in fr
 | Corpus (eval snapshot) | ~18K chunks | `SELECT count(*) FROM chunks` on snapshot v1 | — |
 | nDCG@10, dense-only vs full pipeline | 0.48 → 0.63 | `evaluate.py`: 40 queries, 600 judgments | 0.752 → 0.805 (LLM-judged, unreviewed) |
 | LLM tokens per digest run | ~180K → ~7K | tokenizer count (naive) against response `usage`, median of 14 daily runs | — |
-| `/search` latency | p95 under 400 ms | k6 replaying the 40 eval queries at a fixed rate, on documented hardware | — |
+| `/search` latency | p95 under 400 ms | `latency.py` replaying the 40 eval queries, on documented hardware `fast` mode: **29 ms** p95 (71 ms at 4 concurrent clients). `quality` mode: 2,355 ms p95, which misses the target. M2 laptop CPU; see [latency](#retrieval-pipeline) |
 | App image size | 6.2 GB → 1.3 GB | `docker image ls`, naive build against optimized build | — |
 | Test coverage | 87% or more | `pytest --cov` in `ci.yml` | 91% (188 tests, 2026-11-11) |
 | Regression gate | Blocks a drop in nDCG@10 of more than 2% | `eval-gate.yml` | — |
@@ -454,7 +494,12 @@ ai-news/
 │   │   ├── session.py          # engine and session factory
 │   │   └── repository.py       # upserts and run bookkeeping
 │   ├── pipelines/
-│   │   └── ingest.py           # scrape every source → PostgreSQL
+│   │   ├── ingest.py           # scrape every source → PostgreSQL
+│   │   ├── index.py            # chunk + embed only new or changed documents
+│   │   └── digest.py           # one curated digest per profile, with token accounting
+│   ├── worker/
+│   │   ├── celery_app.py       # Celery on Redis: queues, beat schedule
+│   │   └── tasks.py            # ingest.source, ingest.refresh, index.new_documents, digest.build(_all)
 │   ├── rag/                    # LangChain retrieval pipeline
 │   │   ├── loader.py           # PostgreSQL documents → LangChain Documents
 │   │   ├── chunker.py          # token-aware splitting with sections and timestamps
@@ -465,15 +510,19 @@ ai-news/
 │   │   ├── reranker.py         # stage 4: cross-encoder
 │   │   ├── curation.py         # stage 6: LLM digest with structured output
 │   │   └── pipeline.py         # runs the stages; interactive entry point
-│   └── evaluation/             # pooling.py (snapshot + pools), labeling.py (LLM pre-labels), evaluate.py + metrics.py (nDCG@10)
+│   ├── api/
+│   │   ├── app.py              # FastAPI: /search, /documents/{id}, /healthz, /readyz
+│   │   └── schemas.py          # response models
+│   └── evaluation/             # pooling.py (snapshot + pools), labeling.py (LLM pre-labels), evaluate.py + metrics.py (nDCG@10), latency.py + rerank_sweep.py
 ├── eval/                       # queries, snapshot manifest, pools, judgments (see eval/README.md)
 ├── tests/
 │   ├── unit/                   # no network, no database: ranking, metrics, scrapers on fixtures, chunking, labeling
 │   ├── integration/            # real PostgreSQL: migrations, upserts, BM25 + HNSW retrievers, stages 1–5
 │   └── fixtures/               # saved HTML, RSS and sitemap pages
 ├── .github/workflows/ci.yml    # lint + tests with a coverage gate
-├── migrations/                 # Alembic env.py, template and versions/
-├── compose.yaml                # PostgreSQL 18 (ParadeDB image)
+├── config/profiles.yaml        # the reader profiles that get a daily digest
+├── migrations/                 # Alembic env.py, template and versions/ (0004 adds digests)
+├── compose.yaml                # PostgreSQL 18 (ParadeDB image) and Redis
 ├── .env.example
 └── pyproject.toml              # dependencies + Alembic and ruff config
 ```
@@ -531,10 +580,14 @@ Still to come: `cli.py`, `api/`, `worker/`, `config/profiles.yaml`, `docker/Dock
 - **Done when** the ablation table is complete and the chosen defaults are recorded.
 
 ### Phase 6: API, workers and digest
-- [ ] FastAPI app: models loaded at startup, inference in a thread pool, a Redis cache, and the endpoints above
-- [ ] Celery app with three queues, the beat schedule, `acks_late` and idempotent tasks
-- [ ] Digest per profile with LLM structured output (Groq), plus token accounting (naive against pipeline)
-- [ ] k6 load test, with p50/p95/p99 written to `docs/benchmarks.md`
+- [x] FastAPI app: models loaded at startup, inference in a thread pool, `/search`, `/documents/{id}`, `/healthz`, `/readyz`
+- [x] Digest, profiles and admin endpoints; `/readyz` checks Redis too
+- [ ] Redis query cache and `/metrics`
+- [x] Celery on Redis: `ingest` and `index` queues, beat schedule, `acks_late`, retries, idempotent tasks (upserts; rebuilding a day replaces its digest)
+- [x] Digest per profile (`config/profiles.yaml`) with structured output on Groq and token accounting, real against naive, in `digests`
+- [ ] Two weeks of daily digests, to report the median token saving
+- [x] Latency benchmark (`latency.py`, p50/p95/p99 per stage) and the rerank latency/quality sweep
+- [x] `fast` mode under 400 ms p95 (29 ms); `quality` mode stays at ~2.4 s on CPU
 - **Done when** `docker compose up` serves `/search` within budget and produces a daily digest.
 
 ### Phase 7: Containers
@@ -580,6 +633,7 @@ Secrets go in a `.env` file at the project root (copy `.env.example`). `.env` is
 | `HF_TOKEN` | Optional | A free Hugging Face read token (huggingface.co → Settings → Access Tokens). Downloads model files with higher rate limits and removes the "unauthenticated requests" warning. Everything works without it |
 | `MODEL_CACHE_DIR` | Optional | Where embedding models are stored after their first download. Default: `~/.cache/fastembed` |
 | `RERANK_MODEL` | Phase 5 | Default: `Xenova/ms-marco-MiniLM-L-6-v2` |
+| `RERANK_PASSAGE_CHARACTERS` | Phase 6 | Cut each passage to this many characters before the cross-encoder. Blank (default) keeps full passages; smaller is faster but lowers nDCG (see the sweep) |
 | `GROQ_API_KEY`, `GROQ_MODEL` | Phase 5 | Required by the retriever, and later by evaluation pre-labels and digest curation. Get a free key at console.groq.com, and choose any model your account can use. Both are blank in `.env.example` |
 | `RETRIEVAL_QUERY_COUNT` | Phase 5 | Default: `5`. How many search queries the LLM writes from the reader's interests |
 | `RETRIEVAL_CANDIDATES`, `RRF_K`, `POOLING_METHOD`, `POOL_SIZE`, `RERANK_KEEP`, `MMR_LAMBDA` | Phase 5 | Defaults: `100`, `60`, `max`, `30`, `20`, `0.7`. Chunks each retriever fetches per query, the RRF constant, how chunk scores become post scores (`max`, `top3` or `combmnz`), posts kept after pooling, posts kept after the cross-encoder, and MMR's weight on relevance against variety |

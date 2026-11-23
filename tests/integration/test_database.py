@@ -289,6 +289,15 @@ class TestSearchPipeline:
         posts = search_pipeline.search(["robot"], limit=1, since=NOW - timedelta(days=7), sources=["deepmind"])
         assert [post.metadata["source_id"] for post in posts] == ["robots"]
 
+    def test_fast_search_is_the_evaluated_dense_ranking(self, db, search_pipeline):
+        store_chunks(CORPUS)
+        fast = search_pipeline.search_fast(["robot"], limit=3)
+        dense = system_rankings(search_pipeline, "robot")["dense"][:3]
+        assert [post.id for post in fast] == [post.id for post in dense]
+        assert all("embedding" not in post.metadata for post in fast)
+        recent = search_pipeline.search_fast(["robot"], since=NOW - timedelta(days=7), sources=["deepmind"])
+        assert [post.metadata["source_id"] for post in recent] == ["robots"]
+
     def test_empty_database(self, db, search_pipeline):
         assert search_pipeline.search(["anything"]) == []
 
@@ -316,3 +325,31 @@ def test_downgrade_and_upgrade_round_trip(db):
     command.upgrade(config, "head")
     with get_session_factory()() as session:
         assert session.scalar(select(func.count()).select_from(DocumentRecord)) == 0
+
+
+class TestApi:
+    @pytest.fixture
+    def client(self, db, search_pipeline):
+        from fastapi.testclient import TestClient
+
+        from ai_news.api.app import create_app
+
+        with TestClient(create_app(lambda: search_pipeline)) as client:
+            yield client
+
+    def test_readyz(self, client):
+        assert client.get("/readyz").json() == {"status": "ready"}
+
+    def test_search_and_document_round_trip(self, client):
+        store_chunks(CORPUS)
+        hits = client.get("/search", params={"q": "robot hands", "k": 2}).json()["results"]
+        assert hits[0]["doc_key"] == "deepmind:robots"
+        document = client.get(f"/documents/{hits[0]['document_id']}").json()
+        assert (document["doc_key"], document["title"], document["content_kind"]) == (
+            "deepmind:robots",
+            "Title robots",
+            "summary",
+        )
+
+    def test_unknown_document_is_404(self, client):
+        assert client.get("/documents/123456").status_code == 404

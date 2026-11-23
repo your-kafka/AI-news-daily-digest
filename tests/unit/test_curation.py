@@ -31,8 +31,9 @@ class StubLLM:
         self.error = error
         self.prompts: list[str] = []
 
-    def with_structured_output(self, schema, include_raw):
+    def with_structured_output(self, schema, include_raw, method=None):
         assert schema is Digest and include_raw
+        self.methods = [*getattr(self, "methods", []), method]
 
         def respond(prompt):
             self.prompts.append(prompt.to_string())
@@ -80,3 +81,23 @@ def test_curate_with_no_candidates_skips_the_llm():
 def test_curate_raises_when_the_model_returns_nothing_usable():
     with pytest.raises(CurationError, match="did not return a valid digest"):
         Curator(StubLLM(None, error="bad json"), "m").curate("x", [candidate(1)])
+
+
+def test_falls_back_to_tool_calling_when_groq_rejects_the_json():
+    import httpx
+    from groq import BadRequestError
+
+    request = httpx.Request("POST", "https://api.groq.com")
+    rejected = BadRequestError("tool_use_failed", response=httpx.Response(400, request=request), body=None)
+
+    class FlakyLLM(StubLLM):
+        def with_structured_output(self, schema, include_raw, method=None):
+            runnable = super().with_structured_output(schema, include_raw, method)
+            if method == "json_schema":
+                return RunnableLambda(lambda prompt: (_ for _ in ()).throw(rejected))
+            return runnable
+
+    llm = FlakyLLM(Digest(items=[item(1)]))
+    result = Curator(llm, "m").curate("x", [candidate(1)])
+    assert [entry.document_ids for entry in result.digest.items] == [[1]]
+    assert llm.methods == ["json_schema", "function_calling"]

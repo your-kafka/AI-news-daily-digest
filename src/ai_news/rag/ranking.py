@@ -30,6 +30,19 @@ def reciprocal_rank_fusion(rankings: Sequence[Sequence[Document]], k: int = 60) 
     return [with_metadata(chunks[chunk_id], rrf_score=round(scores[chunk_id], 6)) for chunk_id in ranked]
 
 
+def first_per_document(chunks: Sequence[Document], limit: int | None = None) -> list[Document]:
+    """Keeps each document's highest-ranked chunk, in ranking order."""
+    seen: set[int] = set()
+    posts = []
+    for chunk in chunks:
+        if chunk.metadata["document_id"] not in seen:
+            seen.add(chunk.metadata["document_id"])
+            posts.append(chunk)
+            if len(posts) == limit:
+                break
+    return posts
+
+
 def pool(chunks: Sequence[Document], method: PoolingMethod = "max", limit: int = 30) -> list[Document]:
     by_post: dict[int, list[Document]] = defaultdict(list)
     for chunk in chunks:

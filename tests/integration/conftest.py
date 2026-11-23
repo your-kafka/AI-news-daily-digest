@@ -63,5 +63,5 @@ def database() -> Iterator[Engine]:
 def db(database: Engine) -> Iterator[Engine]:
     """Empties every table before each test."""
     with database.begin() as connection:
-        connection.execute(text("TRUNCATE documents, ingest_runs RESTART IDENTITY CASCADE"))
+        connection.execute(text("TRUNCATE documents, ingest_runs, digests RESTART IDENTITY CASCADE"))
     yield database

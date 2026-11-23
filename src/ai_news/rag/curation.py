@@ -1,9 +1,11 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 
+from groq import BadRequestError
 from langchain_core.documents import Document
 from langchain_core.language_models import BaseChatModel
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import Runnable
 from pydantic import BaseModel, Field
 
 MAX_DIGEST_ITEMS = 10
@@ -50,9 +52,7 @@ class Curator:
     def __init__(self, llm: BaseChatModel, model_name: str, max_items: int = MAX_DIGEST_ITEMS) -> None:
         self.model_name = model_name
         self.max_items = max_items
-        self.chain = CURATION_PROMPT.partial(max_items=str(max_items)) | llm.with_structured_output(
-            Digest, include_raw=True
-        )
+        self.chain = CURATION_PROMPT.partial(max_items=str(max_items)) | structured_digest(llm)
 
     def curate(self, interests: str, posts: Sequence[Document]) -> CurationResult:
         if not posts:
@@ -68,6 +68,16 @@ class Curator:
             usage.get("input_tokens", 0),
             usage.get("output_tokens", 0),
         )
+
+
+def structured_digest(llm: BaseChatModel) -> Runnable:
+    """JSON-schema output first; tool calling if the provider rejects the JSON.
+
+    Groq's gpt-oss models sometimes call a misnamed tool or skip the required tool call, and Groq answers 400.
+    """
+    json_schema = llm.with_structured_output(Digest, method="json_schema", include_raw=True)
+    tool_calling = llm.with_structured_output(Digest, method="function_calling", include_raw=True)
+    return json_schema.with_fallbacks([tool_calling], exceptions_to_handle=(BadRequestError,))
 
 
 def format_candidates(posts: Sequence[Document]) -> str:
