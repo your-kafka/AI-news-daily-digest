@@ -102,21 +102,33 @@ Each scraper file also runs on its own and only prints what its source published
 ```mermaid
 flowchart LR
     subgraph SRC["5 sources"]
-        YT["YouTube<br/>uploads + transcripts"]
-        AN["Anthropic<br/>news · research · engineering"]
-        OA["OpenAI<br/>news RSS"]
-        DM["Google DeepMind<br/>blog"]
-        HF["Hugging Face<br/>blog + daily papers"]
+        YT["`YouTube
+uploads + transcripts`"]
+        AN["`Anthropic
+news · research · engineering`"]
+        OA["`OpenAI
+news RSS`"]
+        DM["`Google DeepMind
+blog`"]
+        HF["`Hugging Face
+blog + daily papers`"]
     end
-    YT & AN & OA & DM & HF --> ING["worker-ingest<br/>discover · fetch · extract · upsert"]
-    BEAT["beat<br/>scheduler"] -.-> RD[("Redis<br/>broker · cache")]
+    YT & AN & OA & DM & HF --> ING["`worker-ingest
+discover · fetch · extract · upsert`"]
+    BEAT["`beat
+scheduler`"] -.-> RD[("`Redis
+broker · cache`")]
     RD -.-> ING
-    ING --> IDX["worker-index<br/>chunk · embed"]
-    IDX --> PG[("PostgreSQL 18<br/>pgvector HNSW + BM25")]
+    ING --> IDX["`worker-index
+chunk · embed`"]
+    IDX --> PG[("`PostgreSQL 18
+pgvector HNSW + BM25`")]
     ING --> PG
-    PG --> CUR["worker-curate<br/>LLM digest"]
+    PG --> CUR["`worker-curate
+LLM digest`"]
     CUR --> PG
-    USER(["client"]) --> API["api · FastAPI<br/>/search · /digest"]
+    USER(["client"]) --> API["`api · FastAPI
+/search · /digest`"]
     API --> PG
     API --> RD
 ```
@@ -312,13 +324,18 @@ With several queries, each one runs both retrievers, and RRF fuses all the ranki
 
 ```mermaid
 flowchart LR
-    Q(["query"]) --> B["1a · BM25<br/>100 chunks"]
-    Q --> D["1b · HNSW<br/>100 chunks"]
+    Q(["query"]) --> B["`1a · BM25
+100 chunks`"]
+    Q --> D["`1b · HNSW
+100 chunks`"]
     B --> F["2 · RRF"]
     D --> F
-    F --> P["3 · pooling<br/>30 docs"]
-    P --> X["4 · cross-encoder<br/>20 docs"]
-    X --> M["5 · MMR<br/>10 docs"]
+    F --> P["`3 · pooling
+30 docs`"]
+    P --> X["`4 · cross-encoder
+20 docs`"]
+    X --> M["`5 · MMR
+10 docs`"]
     M -.->|"digest + eval only"| L["6 · LLM curation"]
 ```
 
