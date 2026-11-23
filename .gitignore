@@ -4,30 +4,76 @@ __pycache__/
 build/
 dist/
 wheels/
+*.egg
 *.egg-info
+.ipynb_checkpoints/
+.tox/
+.nox/
 
 # Virtual environments
 .venv
+venv/
+env/
 
 # Tool caches and test output
 .ruff_cache/
 .pytest_cache/
 .mypy_cache/
+.pyre/
 .coverage
 coverage.xml
 htmlcov/
 
-# Secrets
+# Logs and runtime state
+*.log
+*.pid
+celerybeat-schedule*
+
+# Secrets: every env file except the committed example, plus any key/cert that lands here
 .env
+.env.*
+!.env.example
+.envrc
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+credentials
+secrets.*
+.aws/
 
 # Scraped data
 data/
 
-# Database dumps (large; publish them as release assets instead)
+# Database dumps and local DB files (publish dumps as release assets instead)
 *.dump
+*.sqlite
+*.sqlite3
+*.db
 
-# OS and editor files
+# Model weights and large exports (fastembed's cache lives under ~/.cache; this catches local drops)
+models/
+*.safetensors
+*.onnx
+*.gguf
+*.parquet
+
+# Docker: committed compose.yaml only; overrides are per-machine
+docker-compose.override.yml
+docker-compose.override.yaml
+compose.override.yml
+compose.override.yaml
+
+# OS files
 .DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor and IDE files
 .vscode/
+.idea/
 *.code-workspace
+*.swp
+*.swo
 .claude/settings.local.json
