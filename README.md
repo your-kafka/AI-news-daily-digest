@@ -1,5 +1,7 @@
 # Lodestar: multi-stage retrieval engine for AI news
 
+By **Ramkrishna Rathore** · [luckyrathore70495@kgpian.iitkgp.ac.in](mailto:luckyrathore70495@kgpian.iitkgp.ac.in)
+
 Lodestar ingests AI news from five sources (YouTube transcripts, Anthropic, OpenAI, Google DeepMind and Hugging Face) into a PostgreSQL corpus. It ranks that corpus with a six-stage retrieval pipeline: BM25 + vector search, reciprocal rank fusion, pooling, a cross-encoder, MMR and LLM curation. A daily job turns the last 24 hours of news into a curated digest.
 
 > **Status: scrapers, storage and the six retrieval stages built.** The five scrapers live in [`src/ai_news/scrapers/`](src/ai_news/scrapers/), [`src/ai_news/pipelines/ingest.py`](src/ai_news/pipelines/ingest.py) stores their output in PostgreSQL, and [`src/ai_news/rag/`](src/ai_news/rag/) chunks, embeds, indexes and ranks it. The retrieval stages run with their starting settings and haven't been evaluated yet: there is no evaluation set, so no stage has a measured effect. The API, workers, containers and CI are still the plan, and the [roadmap](#roadmap) tracks progress. The source details below (feeds, counts, page metadata) were checked against the live sites on 2026-10-07.
@@ -668,3 +670,7 @@ Secrets go in a `.env` file at the project root (copy `.env.example`). `.env` is
 | `RETRIEVAL_QUERY_COUNT` | Phase 5 | Default: `5`. How many search queries the LLM writes from the reader's interests |
 | `RETRIEVAL_CANDIDATES`, `RRF_K`, `POOLING_METHOD`, `POOL_SIZE`, `RERANK_KEEP`, `MMR_LAMBDA` | Phase 5 | Defaults: `100`, `60`, `max`, `30`, `20`, `0.7`. Chunks each retriever fetches per query, the RRF constant, how chunk scores become post scores (`max`, `top3` or `combmnz`), posts kept after pooling, posts kept after the cross-encoder, and MMR's weight on relevance against variety |
 | `RETRIEVAL_TOP_K`, `CURATION_CANDIDATES` | Phase 5 | Defaults: `10`, `15`. Posts returned by stages 1–5, and posts sent to the LLM for curation, which returns at most 10 |
+
+## Author
+
+**Ramkrishna Rathore** · [luckyrathore70495@kgpian.iitkgp.ac.in](mailto:luckyrathore70495@kgpian.iitkgp.ac.in)
